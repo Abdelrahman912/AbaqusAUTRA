@@ -1,0 +1,46 @@
+{
+  "CaeName": "SteelConnection",
+  "Models": [
+    {
+      "Name": "Model",
+      "Geometry": {
+        "Beam": {
+          "Length": 1200,
+          "Name": "Beam",
+          "Section": {
+            "h": 200,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoX": 4,
+            "NoY": 3,
+            "PX": 100,
+            "PY": 50,
+            "EX": 50,
+            "EY": 50
+          }
+        },
+        "Column": {
+          "ClearHeight": 890,
+          "Name": "Column",
+          "Section": {
+            "h": 200,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoX": 3,
+            "NoY": 3,
+            "PX": 50,
+            "PY": 50,
+            "EX": 50,
+            "EY": 50
+          }
+        }
+      }
+    }
+  ]
+}
