@@ -14,12 +14,12 @@
             "c": 20
           },
           "ConnectionConfig": {
-            "NoL": 4,
+            "NoL": 4, 
             "NoT": 4,
             "PL": 100,
-            "PT": 25,
+            "PT": 50,
             "EL": 50,
-            "ET": 50,
+            "ET": 25,
             "HoleDia": 14
           }
         },
@@ -34,11 +34,11 @@
             "c": 20
           },
           "ConnectionConfig": {
-            "NoL": 4,
+            "NoL": 3,
             "NoT": 4,
             "PL": 50,
             "PT": 50,
-            "EL": 25,
+            "EL": 50,
             "ET": 25,
             "HoleDia": 14
           }

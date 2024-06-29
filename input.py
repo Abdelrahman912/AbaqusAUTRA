@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from sys import __stdout__
 
 def read_json_file(file_path):
     with open(file_path, 'r') as file:
@@ -19,6 +20,22 @@ def set_up_logger(logfile_path):
 
     return logging
 
+class StandardLogger:
+    def __init__(self):
+        pass
+    
+    def info(self, message):
+       print >> __stdout__, message
+
+    def error(self, message):
+        print >> __stdout__, message
+
+
+    def warning(self, message):
+        print >> __stdout__, message
+
+    def debug(self, message):
+        print >> __stdout__, message
 
 
 def change_to_output_directory(dir):

@@ -206,6 +206,7 @@ del mdb.models['Model-1'].sketches['__profile__']
 
 
 
+# create plates
 mdb.models['Model-1'].ConstrainedSketch(name='__profile__', sheetSize=410.0)
 mdb.models['Model-1'].sketches['__profile__'].Line(point1=(-200.0, 205.0), 
     point2=(-200.0, -205.0))
@@ -257,9 +258,14 @@ mdb.models['Model-1'].sketches['__profile__'].ObliqueDimension(textPoint=(
     mdb.models['Model-1'].sketches['__profile__'].vertices[2])
 mdb.models['Model-1'].Part(dimensionality=THREE_D, name='plate', type=
     DEFORMABLE_BODY)
+
 mdb.models['Model-1'].parts['plate'].BaseSolidExtrude(depth=3.0, sketch=
     mdb.models['Model-1'].sketches['__profile__'])
 del mdb.models['Model-1'].sketches['__profile__']
+
+
+
+# create holes in plates 
 mdb.models['Model-1'].ConstrainedSketch(gridSpacing=28.64, name='__profile__', 
     sheetSize=1145.61, transform=
     mdb.models['Model-1'].parts['plate'].MakeSketchTransform(
@@ -293,12 +299,18 @@ mdb.models['Model-1'].sketches['__profile__'].VerticalDimension(textPoint=(
     -274.112939375, -41.0067202575684), value=110.0, vertex1=
     mdb.models['Model-1'].sketches['__profile__'].vertices[21], vertex2=
     mdb.models['Model-1'].sketches['__profile__'].vertices[41])
+
+
 mdb.models['Model-1'].parts['plate'].CutExtrude(flipExtrudeDirection=OFF, 
     sketch=mdb.models['Model-1'].sketches['__profile__'], sketchOrientation=
     RIGHT, sketchPlane=mdb.models['Model-1'].parts['plate'].faces[5], 
     sketchPlaneSide=SIDE1, sketchUpEdge=
     mdb.models['Model-1'].parts['plate'].edges[0])
 del mdb.models['Model-1'].sketches['__profile__']
+
+
+
+
 mdb.models['Model-1'].Part(name='Csection-column', objectToCopy=
     mdb.models['Model-1'].parts['Csection-beam'])
 mdb.models['Model-1'].parts['Csection-column'].features['Solid extrude-1'].setValues(
@@ -346,17 +358,24 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
+
 mdb.models['Model-1'].ConstrainedSketch(name='__profile__', sheetSize=12.0)
 mdb.models['Model-1'].sketches['__profile__'].CircleByCenterPerimeter(center=(
     0.0, 0.0), point1=(0.35, -0.35))
+
 mdb.models['Model-1'].sketches['__profile__'].RadialDimension(curve=
     mdb.models['Model-1'].sketches['__profile__'].geometry[2], radius=6.0, 
     textPoint=(-2.74163675308228, 0.888970077037811))
+
 mdb.models['Model-1'].Part(dimensionality=THREE_D, name='bolt', type=
     DEFORMABLE_BODY)
 mdb.models['Model-1'].parts['bolt'].BaseSolidExtrude(depth=13.0, sketch=
     mdb.models['Model-1'].sketches['__profile__'])
 del mdb.models['Model-1'].sketches['__profile__']
+
+
+
+
 mdb.models['Model-1'].ConstrainedSketch(gridSpacing=1.06, name='__profile__', 
     sheetSize=42.7, transform=
     mdb.models['Model-1'].parts['bolt'].MakeSketchTransform(
@@ -364,6 +383,7 @@ mdb.models['Model-1'].ConstrainedSketch(gridSpacing=1.06, name='__profile__',
     sketchPlaneSide=SIDE1, 
     sketchUpEdge=mdb.models['Model-1'].parts['bolt'].edges[0], 
     sketchOrientation=RIGHT, origin=(0.0, 0.0, 13.0)))
+
 mdb.models['Model-1'].parts['bolt'].projectReferencesOntoSketch(filter=
     COPLANAR_EDGES, sketch=mdb.models['Model-1'].sketches['__profile__'])
 mdb.models['Model-1'].sketches['__profile__'].CircleByCenterPerimeter(center=(
@@ -371,12 +391,16 @@ mdb.models['Model-1'].sketches['__profile__'].CircleByCenterPerimeter(center=(
 mdb.models['Model-1'].sketches['__profile__'].RadialDimension(curve=
     mdb.models['Model-1'].sketches['__profile__'].geometry[3], radius=9.0, 
     textPoint=(-9.1439037322998, 0.315985441207886))
+
 mdb.models['Model-1'].parts['bolt'].SolidExtrude(depth=4.0, 
     flipExtrudeDirection=OFF, sketch=
     mdb.models['Model-1'].sketches['__profile__'], sketchOrientation=RIGHT, 
     sketchPlane=mdb.models['Model-1'].parts['bolt'].faces[1], sketchPlaneSide=
     SIDE1, sketchUpEdge=mdb.models['Model-1'].parts['bolt'].edges[0])
 del mdb.models['Model-1'].sketches['__profile__']
+
+
+
 mdb.models['Model-1'].ConstrainedSketch(gridSpacing=1.06, name='__profile__', 
     sheetSize=42.7, transform=
     mdb.models['Model-1'].parts['bolt'].MakeSketchTransform(
@@ -397,6 +421,7 @@ mdb.models['Model-1'].parts['bolt'].SolidExtrude(depth=4.0,
     sketchPlane=mdb.models['Model-1'].parts['bolt'].faces[4], sketchPlaneSide=
     SIDE1, sketchUpEdge=mdb.models['Model-1'].parts['bolt'].edges[3])
 del mdb.models['Model-1'].sketches['__profile__']
+
 # Save by User on 2024_06_24-21.42.14; build 2020 2019_09_13-19.49.31 163176
 from part import *
 from material import *
@@ -411,6 +436,9 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
+
+
+# deine material and section
 mdb.models['Model-1'].Material(description=
     'this is the mterial of beams, columns and plate', name='steel')
 mdb.models['Model-1'].materials['steel'].Elastic(table=((210000.0, 0.33), ))
@@ -424,6 +452,7 @@ mdb.models['Model-1'].HomogeneousSolidSection(material='steel', name=
     'Csection-plate', thickness=None)
 mdb.models['Model-1'].HomogeneousSolidSection(material='steel-bolt', name=
     'bolt-section', thickness=None)
+
 mdb.models['Model-1'].parts['bolt'].Set(cells=
     mdb.models['Model-1'].parts['bolt'].cells.getSequenceFromMask(('[#1 ]', ), 
     ), name='Set-1')
@@ -452,6 +481,9 @@ mdb.models['Model-1'].parts['Csection-beam'].SectionAssignment(offset=0.0,
     offsetField='', offsetType=MIDDLE_SURFACE, region=
     mdb.models['Model-1'].parts['Csection-beam'].sets['Set-1'], sectionName=
     'Csection-plate', thicknessAssignment=FROM_SECTION)
+
+
+# create partition
 mdb.models['Model-1'].parts['Csection-beam'].PartitionCellByPlaneThreePoints(
     cells=
     mdb.models['Model-1'].parts['Csection-beam'].cells.getSequenceFromMask((
@@ -805,12 +837,17 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
+
+
+
+# Assembly
 mdb.models['Model-1'].rootAssembly.DatumCsysByDefault(CARTESIAN)
 mdb.models['Model-1'].rootAssembly.Instance(dependent=ON, name=
     'Csection-beam-1', part=mdb.models['Model-1'].parts['Csection-beam'])
 mdb.models['Model-1'].rootAssembly.rotate(angle=180.0, axisDirection=(0.0, 0.0, 
     -10.0), axisPoint=(30.0, 100.0, 1150.0), instanceList=('Csection-beam-1', 
     ))
+
 mdb.models['Model-1'].rootAssembly.Instance(dependent=ON, name='plate-1', part=
     mdb.models['Model-1'].parts['plate'])
 mdb.models['Model-1'].rootAssembly.rotate(angle=90.0, axisDirection=(0.0, 
@@ -819,6 +856,8 @@ mdb.models['Model-1'].rootAssembly.rotate(angle=180.0, axisDirection=(0.0,
     -10.0, 0.0), axisPoint=(203.0, 55.0, 3.0), instanceList=('plate-1', ))
 mdb.models['Model-1'].rootAssembly.translate(instanceList=('plate-1', ), 
     vector=(-113.0, 95.0, 797.0))
+
+
 mdb.models['Model-1'].rootAssembly.Instance(dependent=ON, name=
     'Csection-beam-2', part=mdb.models['Model-1'].parts['Csection-beam'])
 mdb.models['Model-1'].rootAssembly.instances['Csection-beam-2'].translate(
