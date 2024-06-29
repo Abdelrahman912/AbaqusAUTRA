@@ -28,7 +28,7 @@ def create_model(model_name):
     """
     return mdb.Model(name=str(model_name))
 
-def create_csection_part(abaqus_model,section,length,part_name):
+def create_csection_part(abaqus_model,section,length,part_name,conn_config):
     h = section.h
     b = section.b
     t = section.t
@@ -47,6 +47,7 @@ def create_csection_part(abaqus_model,section,length,part_name):
     p10 = (b/2 - t,h/2  - c)
     p11 = (b/2, h/2 - c)
     p12 = (b/2, h/2)
+    # create solid part
     abaqus_model.sketches['__profile__'].Line(point1=p1, point2=p2)
     abaqus_model.sketches['__profile__'].Line(point1=p2, point2=p3)
     abaqus_model.sketches['__profile__'].Line(point1=p3, point2=p4)
@@ -62,6 +63,47 @@ def create_csection_part(abaqus_model,section,length,part_name):
     abaqus_model.Part(dimensionality=THREE_D, name=str(part_name), type=DEFORMABLE_BODY)
     abaqus_model.parts[str(part_name)].BaseSolidExtrude(depth=length, 
         sketch=abaqus_model.sketches['__profile__'])
+    del abaqus_model.sketches['__profile__']
+    # create holes
+    # choose face to sketch on
+    abaqus_model.ConstrainedSketch(gridSpacing=60.84, name=
+    '__profile__', sheetSize=2 * length, transform=
+    abaqus_model.parts[str(part_name)].MakeSketchTransform(
+    sketchPlane=abaqus_model.parts[str(part_name)].faces[10], 
+    sketchPlaneSide=SIDE1, 
+    sketchUpEdge=abaqus_model.parts[str(part_name)].edges[33], 
+    sketchOrientation=RIGHT, origin=(-b/2, 0.0, length/2)))
+    abaqus_model.parts[str(part_name)].projectReferencesOntoSketch(
+        filter=COPLANAR_EDGES, sketch=
+        abaqus_model.sketches['__profile__'])
+    # abaqus_model.sketches['__profile__'].sketchOptions.setValues(
+    # gridOrigin=(-length/2, h/2))
+
+    nl = conn_config.NoL
+    nt = conn_config.NoT
+    pl = conn_config.PL
+    pt = conn_config.PT
+    el = conn_config.EL
+    et = conn_config.ET
+    r = conn_config.HoleDia/2
+
+    # create holes
+    center = (-length/2 +  el, h/2 - et)
+    abaqus_model.sketches['__profile__'].CircleByCenterPerimeter(
+    center=center, point1=(-length/2 + el + r, h/2 -  et))
+
+    # create linear pattern
+    abaqus_model.sketches['__profile__'].linearPattern(angle1=0.0, angle2=
+    270.0, geomList=(abaqus_model.sketches['__profile__'].geometry[6], 
+    ), number1=nl, number2=nt, spacing1=pl, spacing2=pt, vertexList=())
+
+    # define extrusion
+    abaqus_model.parts[str(part_name)].CutExtrude(flipExtrudeDirection=
+    OFF, sketch=abaqus_model.sketches['__profile__'], 
+    sketchOrientation=RIGHT, sketchPlane=
+    abaqus_model.parts[str(part_name)].faces[10], sketchPlaneSide=
+    SIDE1, sketchUpEdge=abaqus_model.parts[str(part_name)].edges[33], upToFace=
+        abaqus_model.parts[str(part_name)].faces[4])
     del abaqus_model.sketches['__profile__']
 
 
@@ -79,14 +121,16 @@ def run_script(logging,input_params):
         ## Part ---------------------------------------------------------------------
 
         beam = model.Geometry.Beam
+        beam_conn_config = beam.ConnectionConfig
         column = model.Geometry.Column
+        column_conn_config = column.ConnectionConfig
 
         # Create part
         logging.info("Creating parts...")
         # Create beam part
-        create_csection_part(abaqus_model,beam.Section,beam.Length,"beam")
+        create_csection_part(abaqus_model,beam.Section,beam.Length,"beam",beam_conn_config)
         # Create column part
-        create_csection_part(abaqus_model,column.Section,column.ClearHeight,"column")
+        create_csection_part(abaqus_model,column.Section,column.ClearHeight,"column",column_conn_config)
 
 
 

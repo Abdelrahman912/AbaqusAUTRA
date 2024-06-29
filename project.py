@@ -166,9 +166,13 @@ mdb.models['Model-1'].sketches['__profile__'].PerpendicularConstraint(
     mdb.models['Model-1'].sketches['__profile__'].geometry[14])
 mdb.models['Model-1'].Part(dimensionality=THREE_D, name='Csection-beam', type=
     DEFORMABLE_BODY)
+
 mdb.models['Model-1'].parts['Csection-beam'].BaseSolidExtrude(depth=1200.0, 
     sketch=mdb.models['Model-1'].sketches['__profile__'])
 del mdb.models['Model-1'].sketches['__profile__']
+
+
+# create holes
 mdb.models['Model-1'].ConstrainedSketch(gridSpacing=60.84, name='__profile__', 
     sheetSize=2433.84, transform=
     mdb.models['Model-1'].parts['Csection-beam'].MakeSketchTransform(
@@ -179,13 +183,17 @@ mdb.models['Model-1'].ConstrainedSketch(gridSpacing=60.84, name='__profile__',
 mdb.models['Model-1'].parts['Csection-beam'].projectReferencesOntoSketch(
     filter=COPLANAR_EDGES, sketch=
     mdb.models['Model-1'].sketches['__profile__'])
+
 mdb.models['Model-1'].sketches['__profile__'].sketchOptions.setValues(
     gridOrigin=(-600.0, 100.0))
+
+
 mdb.models['Model-1'].sketches['__profile__'].CircleByCenterPerimeter(center=(
     -550.0, 50.0), point1=(-539.16, 54.37))
 mdb.models['Model-1'].sketches['__profile__'].RadialDimension(curve=
     mdb.models['Model-1'].sketches['__profile__'].geometry[6], radius=7.0, 
     textPoint=(-486.546508789063, 142.814453125))
+
 mdb.models['Model-1'].sketches['__profile__'].linearPattern(angle1=0.0, angle2=
     270.0, geomList=(mdb.models['Model-1'].sketches['__profile__'].geometry[6], 
     ), number1=4, number2=3, spacing1=100.0, spacing2=50.0, vertexList=())
@@ -195,6 +203,9 @@ mdb.models['Model-1'].parts['Csection-beam'].CutExtrude(flipExtrudeDirection=
     mdb.models['Model-1'].parts['Csection-beam'].faces[10], sketchPlaneSide=
     SIDE1, sketchUpEdge=mdb.models['Model-1'].parts['Csection-beam'].edges[33])
 del mdb.models['Model-1'].sketches['__profile__']
+
+
+
 mdb.models['Model-1'].ConstrainedSketch(name='__profile__', sheetSize=410.0)
 mdb.models['Model-1'].sketches['__profile__'].Line(point1=(-200.0, 205.0), 
     point2=(-200.0, -205.0))

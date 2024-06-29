@@ -31,16 +31,18 @@ def change_to_output_directory(dir):
 
 
 
+
 import json
 
 class ConnectionConfig:
-    def __init__(self, NoX, NoY, PX, PY, EX, EY):
-        self.NoX = NoX
-        self.NoY = NoY
-        self.PX = PX
-        self.PY = PY
-        self.EX = EX
-        self.EY = EY
+    def __init__(self, NoL, NoT, PL, PT, EL, ET, HoleDia):
+        self.NoL = NoL
+        self.NoT = NoT
+        self.PL = PL
+        self.PT = PT
+        self.EL = EL
+        self.ET = ET
+        self.HoleDia = HoleDia
 
 class Section:
     def __init__(self, h, b, t, c):
@@ -79,6 +81,7 @@ class InputParameter:
         self.Models = Models
 
 def map_json_to_objects(file_path):
+    # Read the JSON file
     json_data = read_json_file(file_path)
     models = []
     for model_data in json_data['Models']:
@@ -98,6 +101,9 @@ def map_json_to_objects(file_path):
         models.append(model)
     
     return InputParameter(json_data['CaeName'], models)
+
+
+
 
 
 

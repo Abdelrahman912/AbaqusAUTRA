@@ -2,7 +2,7 @@
   "CaeName": "SteelConnection",
   "Models": [
     {
-      "Name": "Steel Connection",
+      "Name": "Model - Steel Connection",
       "Geometry": {
         "Beam": {
           "Length": 1200,
@@ -14,12 +14,13 @@
             "c": 20
           },
           "ConnectionConfig": {
-            "NoX": 4,
-            "NoY": 3,
-            "PX": 100,
-            "PY": 50,
-            "EX": 50,
-            "EY": 50
+            "NoL": 4,
+            "NoT": 4,
+            "PL": 100,
+            "PT": 50,
+            "EL": 50,
+            "ET": 25,
+            "HoleDia": 14
           }
         },
         "Column": {
@@ -32,12 +33,13 @@
             "c": 20
           },
           "ConnectionConfig": {
-            "NoX": 3,
-            "NoY": 3,
-            "PX": 50,
-            "PY": 50,
-            "EX": 50,
-            "EY": 50
+            "NoL": 4,
+            "NoT": 4,
+            "PL": 50,
+            "PT": 50,
+            "EL": 25,
+            "ET": 25,
+            "HoleDia": 14
           }
         }
       }

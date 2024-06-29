@@ -1,0 +1,71 @@
+# -*- coding: mbcs -*-
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+mdb.Model(name='Model - Steel Connection')
+mdb.models['Model - Steel Connection'].ConstrainedSketch(name='__profile__', 
+    sheetSize=200)
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -30, 100), point2=(-30, -100))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -30, -100), point2=(30, -100))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    -100), point2=(30, -80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    -80), point2=(25, -80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    -80), point2=(25, -95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    -95), point2=(-25, -95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -25, -95), point2=(-25, 95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -25, 95), point2=(25, 95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    95), point2=(25, 80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    80), point2=(30, 80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    80), point2=(30, 100))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    100), point2=(-30, 100))
+mdb.models['Model - Steel Connection'].Part(dimensionality=THREE_D, name='beam'
+    , type=DEFORMABLE_BODY)
+mdb.models['Model - Steel Connection'].parts['beam'].BaseSolidExtrude(depth=
+    1200, sketch=
+    mdb.models['Model - Steel Connection'].sketches['__profile__'])
+del mdb.models['Model - Steel Connection'].sketches['__profile__']
+mdb.models['Model - Steel Connection'].ConstrainedSketch(gridSpacing=60.84, 
+    name='__profile__', sheetSize=2400, transform=
+    mdb.models['Model - Steel Connection'].parts['beam'].MakeSketchTransform(
+    sketchPlane=mdb.models['Model - Steel Connection'].parts['beam'].faces[10], 
+    sketchPlaneSide=SIDE1, 
+    sketchUpEdge=mdb.models['Model - Steel Connection'].parts['beam'].edges[33], 
+    sketchOrientation=RIGHT, origin=(-30.0, 0.0, 600.0)))
+mdb.models['Model - Steel Connection'].parts['beam'].projectReferencesOntoSketch(
+    filter=COPLANAR_EDGES, sketch=
+    mdb.models['Model - Steel Connection'].sketches['__profile__'])
+mdb.models['Model - Steel Connection'].sketches['__profile__'].CircleByCenterPerimeter(
+    center=(-550, 75), point1=(-543, 75))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].linearPattern(
+    angle1=0.0, angle2=270.0, geomList=(
+    mdb.models['Model - Steel Connection'].sketches['__profile__'].geometry[6], 
+    ), number1=4, number2=4, spacing1=100, spacing2=50, vertexList=())
+mdb.models['Model - Steel Connection'].parts['beam'].CutExtrude(
+    flipExtrudeDirection=OFF, sketch=
+    mdb.models['Model - Steel Connection'].sketches['__profile__'], 
+    sketchOrientation=RIGHT, sketchPlane=
+    mdb.models['Model - Steel Connection'].parts['beam'].faces[10], 
+    sketchPlaneSide=SIDE1, sketchUpEdge=
+    mdb.models['Model - Steel Connection'].parts['beam'].edges[33], upToFace=
+    mdb.models['Model - Steel Connection'].parts['beam'].faces[12])
+#* Cut extrude feature failed

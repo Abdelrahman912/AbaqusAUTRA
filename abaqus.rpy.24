@@ -2,7 +2,7 @@
 #
 # Abaqus/CAE Release 2020 replay file
 # Internal Version: 2019_09_13-19.49.31 163176
-# Run by User on Sat Jun 29 09:10:25 2024
+# Run by User on Sat Jun 29 12:14:50 2024
 #
 
 # from driverUtils import executeOnCaeGraphicsStartup
@@ -17,15 +17,17 @@ from driverUtils import executeOnCaeStartup
 executeOnCaeStartup()
 execfile('main.py', __main__.__dict__)
 #: SteelConnection
-#: The model "Steel Connection" has been created.
-#* Solid extrude feature failed
+#: The model "Model - Steel Connection" has been created.
+#* Cut extrude feature failed
 #* File "main.py", line 14, in <module>
 #*     run_script(logging, input_params)
 #* File "C:\Users\User\OneDrive\RUB\Master\Second Semester\Applied 
-#* FEM\Abaqus\AbaqusScriptingRubProject\steel_connection.py", line 87, in 
+#* FEM\Abaqus\AbaqusScriptingRubProject\steel_connection.py", line 130, in 
 #* run_script
-#*     create_csection_part(abaqus_model,beam.Section,beam.Length,"beam")
+#*     
+#* create_csection_part(abaqus_model,beam.Section,beam.Length,"beam",
+#* beam_conn_config)
 #* File "C:\Users\User\OneDrive\RUB\Master\Second Semester\Applied 
-#* FEM\Abaqus\AbaqusScriptingRubProject\steel_connection.py", line 64, in 
+#* FEM\Abaqus\AbaqusScriptingRubProject\steel_connection.py", line 105, in 
 #* create_csection_part
-#*     sketch=abaqus_model.sketches['__profile__'])
+#*     abaqus_model.parts[str(part_name)].faces[9])

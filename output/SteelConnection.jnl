@@ -11,67 +11,118 @@ from optimization import *
 from job import *
 from sketch import *
 from visualization import *
-mdb.Model(name='Steel Connection')
-mdb.models['Steel Connection'].ConstrainedSketch(name='__profile__', sheetSize=
-    200)
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-30, 100), 
-    point2=(-30, -100))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-30, -100), 
-    point2=(30, -100))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, -100), 
-    point2=(30, -80))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, -80), 
-    point2=(25, -80))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(25, -80), 
-    point2=(25, -95))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(25, -95), 
-    point2=(-25, -95))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-25, -95), 
-    point2=(-25, 95))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-25, 95), 
-    point2=(25, 95))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(25, 95), 
-    point2=(25, 80))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(25, 80), 
-    point2=(30, 80))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, 80), 
-    point2=(30, 100))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, 100), 
-    point2=(-30, 100))
-mdb.models['Steel Connection'].Part(dimensionality=THREE_D, name='beam', type=
-    DEFORMABLE_BODY)
-mdb.models['Steel Connection'].parts['beam'].BaseSolidExtrude(depth=1200, 
-    sketch=mdb.models['Steel Connection'].sketches['__profile__'])
-del mdb.models['Steel Connection'].sketches['__profile__']
-mdb.models['Steel Connection'].ConstrainedSketch(name='__profile__', sheetSize=
-    200)
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-30, 100), 
-    point2=(-30, -100))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-30, -100), 
-    point2=(30, -100))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, -100), 
-    point2=(30, -80))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, -80), 
-    point2=(25, -80))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(25, -80), 
-    point2=(25, -95))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(25, -95), 
-    point2=(-25, -95))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-25, -95), 
-    point2=(-25, 95))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-25, 95), 
-    point2=(25, 95))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(25, 95), 
-    point2=(25, 80))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(25, 80), 
-    point2=(30, 80))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, 80), 
-    point2=(30, 100))
-mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, 100), 
-    point2=(-30, 100))
-mdb.models['Steel Connection'].Part(dimensionality=THREE_D, name='column', 
-    type=DEFORMABLE_BODY)
-mdb.models['Steel Connection'].parts['column'].BaseSolidExtrude(depth=890, 
-    sketch=mdb.models['Steel Connection'].sketches['__profile__'])
-del mdb.models['Steel Connection'].sketches['__profile__']
-# Save by User on 2024_06_29-09.12.17; build 2020 2019_09_13-19.49.31 163176
+mdb.Model(name='Model - Steel Connection')
+mdb.models['Model - Steel Connection'].ConstrainedSketch(name='__profile__', 
+    sheetSize=200)
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -30, 100), point2=(-30, -100))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -30, -100), point2=(30, -100))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    -100), point2=(30, -80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    -80), point2=(25, -80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    -80), point2=(25, -95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    -95), point2=(-25, -95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -25, -95), point2=(-25, 95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -25, 95), point2=(25, 95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    95), point2=(25, 80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    80), point2=(30, 80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    80), point2=(30, 100))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    100), point2=(-30, 100))
+mdb.models['Model - Steel Connection'].Part(dimensionality=THREE_D, name='beam'
+    , type=DEFORMABLE_BODY)
+mdb.models['Model - Steel Connection'].parts['beam'].BaseSolidExtrude(depth=
+    1200, sketch=
+    mdb.models['Model - Steel Connection'].sketches['__profile__'])
+del mdb.models['Model - Steel Connection'].sketches['__profile__']
+mdb.models['Model - Steel Connection'].ConstrainedSketch(gridSpacing=60.84, 
+    name='__profile__', sheetSize=2400, transform=
+    mdb.models['Model - Steel Connection'].parts['beam'].MakeSketchTransform(
+    sketchPlane=mdb.models['Model - Steel Connection'].parts['beam'].faces[10], 
+    sketchPlaneSide=SIDE1, 
+    sketchUpEdge=mdb.models['Model - Steel Connection'].parts['beam'].edges[33], 
+    sketchOrientation=RIGHT, origin=(-30.0, 0.0, 600.0)))
+mdb.models['Model - Steel Connection'].parts['beam'].projectReferencesOntoSketch(
+    filter=COPLANAR_EDGES, sketch=
+    mdb.models['Model - Steel Connection'].sketches['__profile__'])
+mdb.models['Model - Steel Connection'].sketches['__profile__'].CircleByCenterPerimeter(
+    center=(-550, 75), point1=(-543, 75))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].linearPattern(
+    angle1=0.0, angle2=270.0, geomList=(
+    mdb.models['Model - Steel Connection'].sketches['__profile__'].geometry[6], 
+    ), number1=4, number2=4, spacing1=100, spacing2=50, vertexList=())
+mdb.models['Model - Steel Connection'].parts['beam'].CutExtrude(
+    flipExtrudeDirection=OFF, sketch=
+    mdb.models['Model - Steel Connection'].sketches['__profile__'], 
+    sketchOrientation=RIGHT, sketchPlane=
+    mdb.models['Model - Steel Connection'].parts['beam'].faces[10], 
+    sketchPlaneSide=SIDE1, sketchUpEdge=
+    mdb.models['Model - Steel Connection'].parts['beam'].edges[33], upToFace=
+    mdb.models['Model - Steel Connection'].parts['beam'].faces[4])
+del mdb.models['Model - Steel Connection'].sketches['__profile__']
+mdb.models['Model - Steel Connection'].ConstrainedSketch(name='__profile__', 
+    sheetSize=200)
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -30, 100), point2=(-30, -100))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -30, -100), point2=(30, -100))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    -100), point2=(30, -80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    -80), point2=(25, -80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    -80), point2=(25, -95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    -95), point2=(-25, -95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -25, -95), point2=(-25, 95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(
+    -25, 95), point2=(25, 95))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    95), point2=(25, 80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(25, 
+    80), point2=(30, 80))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    80), point2=(30, 100))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].Line(point1=(30, 
+    100), point2=(-30, 100))
+mdb.models['Model - Steel Connection'].Part(dimensionality=THREE_D, name=
+    'column', type=DEFORMABLE_BODY)
+mdb.models['Model - Steel Connection'].parts['column'].BaseSolidExtrude(depth=
+    890, sketch=mdb.models['Model - Steel Connection'].sketches['__profile__'])
+del mdb.models['Model - Steel Connection'].sketches['__profile__']
+mdb.models['Model - Steel Connection'].ConstrainedSketch(gridSpacing=60.84, 
+    name='__profile__', sheetSize=1780, transform=
+    mdb.models['Model - Steel Connection'].parts['column'].MakeSketchTransform(
+    sketchPlane=mdb.models['Model - Steel Connection'].parts['column'].faces[10], 
+    sketchPlaneSide=SIDE1, 
+    sketchUpEdge=mdb.models['Model - Steel Connection'].parts['column'].edges[33], 
+    sketchOrientation=RIGHT, origin=(-30.0, 0.0, 445.0)))
+mdb.models['Model - Steel Connection'].parts['column'].projectReferencesOntoSketch(
+    filter=COPLANAR_EDGES, sketch=
+    mdb.models['Model - Steel Connection'].sketches['__profile__'])
+mdb.models['Model - Steel Connection'].sketches['__profile__'].CircleByCenterPerimeter(
+    center=(-420, 75), point1=(-413, 75))
+mdb.models['Model - Steel Connection'].sketches['__profile__'].linearPattern(
+    angle1=0.0, angle2=270.0, geomList=(
+    mdb.models['Model - Steel Connection'].sketches['__profile__'].geometry[6], 
+    ), number1=4, number2=4, spacing1=50, spacing2=50, vertexList=())
+mdb.models['Model - Steel Connection'].parts['column'].CutExtrude(
+    flipExtrudeDirection=OFF, sketch=
+    mdb.models['Model - Steel Connection'].sketches['__profile__'], 
+    sketchOrientation=RIGHT, sketchPlane=
+    mdb.models['Model - Steel Connection'].parts['column'].faces[10], 
+    sketchPlaneSide=SIDE1, sketchUpEdge=
+    mdb.models['Model - Steel Connection'].parts['column'].edges[33], upToFace=
+    mdb.models['Model - Steel Connection'].parts['column'].faces[4])
+del mdb.models['Model - Steel Connection'].sketches['__profile__']
+# Save by User on 2024_06_29-12.18.36; build 2020 2019_09_13-19.49.31 163176
