@@ -1,0 +1,45 @@
+# -*- coding: mbcs -*-
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+mdb.Model(name='Steel Connection')
+mdb.models['Steel Connection'].ConstrainedSketch(name='__profile__', sheetSize=
+    200)
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-30, 100), 
+    point2=(-30, -100))
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-30, -100), 
+    point2=(30, -100))
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, -100), 
+    point2=(30, -80))
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, -80), 
+    point2=(25, -80))
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(25, -80), 
+    point2=(25, -95))
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(25, -95), 
+    point2=(-25, -95))
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-25, -95), 
+    point2=(-25, 95))
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(-25, 95), 
+    point2=(35, 95))
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(35, 95), 
+    point2=(25, 80))
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(25, 80), 
+    point2=(30, 80))
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, 80), 
+    point2=(30, 100))
+mdb.models['Steel Connection'].sketches['__profile__'].Line(point1=(30, 100), 
+    point2=(-30, 100))
+mdb.models['Steel Connection'].Part(dimensionality=THREE_D, name='beam', type=
+    DEFORMABLE_BODY)
+mdb.models['Steel Connection'].parts['beam'].BaseSolidExtrude(depth=1200, 
+    sketch=mdb.models['Steel Connection'].sketches['__profile__'])
+#* Solid extrude feature failed

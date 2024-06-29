@@ -2,7 +2,7 @@
   "CaeName": "SteelConnection",
   "Models": [
     {
-      "Name": "Model",
+      "Name": "Steel Connection",
       "Geometry": {
         "Beam": {
           "Length": 1200,

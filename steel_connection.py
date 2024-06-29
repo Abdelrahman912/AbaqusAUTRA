@@ -43,7 +43,7 @@ def create_csection_part(abaqus_model,section,length,part_name):
     p6 = (b/2 -t, -h/2 + t)
     p7 = (-b/2 + t , -h/2 + t)
     p8 = (-b/2 + t, h/2 - t)
-    p9 = (-b/2 + t, h/2 - t)
+    p9 = (b/2 - t, h/2 - t)
     p10 = (b/2 - t,h/2  - c)
     p11 = (b/2, h/2 - c)
     p12 = (b/2, h/2)
