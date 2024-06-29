@@ -107,6 +107,39 @@ def create_csection_part(abaqus_model,section,length,part_name,conn_config):
     del abaqus_model.sketches['__profile__']
 
 
+def create_head_extrusion(abaqus_model,bolt_part,head_r,head_length,origin,face_index,edge_index):
+    abaqus_model.ConstrainedSketch(gridSpacing=1.06, name='__profile__', 
+    sheetSize=head_r * 2, transform=
+        bolt_part.MakeSketchTransform(sketchPlane=bolt_part.faces[face_index], sketchPlaneSide=SIDE1, sketchUpEdge=bolt_part.edges[edge_index], 
+        sketchOrientation=RIGHT, origin=origin))
+
+    bolt_part.projectReferencesOntoSketch(filter= COPLANAR_EDGES, sketch=abaqus_model.sketches['__profile__'])
+    abaqus_model.sketches['__profile__'].CircleByCenterPerimeter(center=(0,0), point1=(head_r, 0))
+    bolt_part.SolidExtrude(depth=head_length, flipExtrudeDirection=OFF, sketch=abaqus_model.sketches['__profile__'], sketchOrientation=RIGHT, 
+        sketchPlane=bolt_part.faces[face_index], sketchPlaneSide= SIDE1, sketchUpEdge=bolt_part.edges[edge_index])
+    del abaqus_model.sketches['__profile__']
+
+def create_bolt_part(abaqus_model,bolt,tp,tc):
+    bolt_name = bolt.Name
+    shank_r = bolt.ShankDia / 2
+    shank_length = 2*tc + tp
+    head_length = bolt.HeadLength
+    head_r = bolt.HeadDia / 2
+
+    # Create sketch for shank
+    center = (0,0)
+    p1 = (shank_r,0)
+    abaqus_model.ConstrainedSketch(name='__profile__', sheetSize=bolt.ShankDia)
+    abaqus_model.sketches['__profile__'].CircleByCenterPerimeter(center=center, point1=p1)
+    bolt_part = abaqus_model.Part(dimensionality=THREE_D, name=str(bolt_name), type=
+        DEFORMABLE_BODY)
+    bolt_part.BaseSolidExtrude(depth=shank_length, sketch=
+        abaqus_model.sketches['__profile__'])
+    del abaqus_model.sketches['__profile__']
+
+    # Create sketch for head
+    create_head_extrusion(abaqus_model,bolt_part,head_r,head_length,(0,0,shank_length),1,0)
+    create_head_extrusion(abaqus_model,bolt_part,head_r,head_length,(0,0,0),4,3)
 
 
 
@@ -124,6 +157,7 @@ def run_script(logging,input_params):
         beam_conn_config = beam.ConnectionConfig
         column = model.Geometry.Column
         column_conn_config = column.ConnectionConfig
+        bolt = model.Geometry.Bolt
 
         # Create part
         logging.info("Creating parts...")
@@ -131,8 +165,8 @@ def run_script(logging,input_params):
         create_csection_part(abaqus_model,beam.Section,beam.Length,"beam",beam_conn_config)
         # Create column part
         create_csection_part(abaqus_model,column.Section,column.ClearHeight,"column",column_conn_config)
-
-
+        # Create bolt part
+        create_bolt_part(abaqus_model,bolt,column.Section.t,beam.Section.t)
 
 
         logging.info("Saving model...")

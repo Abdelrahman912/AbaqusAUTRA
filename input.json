@@ -17,12 +17,13 @@
             "NoL": 4,
             "NoT": 4,
             "PL": 100,
-            "PT": 50,
+            "PT": 25,
             "EL": 50,
-            "ET": 25,
+            "ET": 50,
             "HoleDia": 14
           }
         },
+        "BeamColumnClearance": 10,
         "Column": {
           "ClearHeight": 890,
           "Name": "Column",
@@ -41,6 +42,16 @@
             "ET": 25,
             "HoleDia": 14
           }
+        },
+        "Bolt": {
+          "Name": "Bolt - D12",
+          "ShankDia": 12,
+          "HeadLength": 4,
+          "HeadDia": 18
+        },
+        "Plate": {
+          "Name": "Gusset Plate",
+          "t": 3
         }
       }
     }

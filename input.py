@@ -32,6 +32,7 @@ def change_to_output_directory(dir):
 
 
 
+
 import json
 
 class ConnectionConfig:
@@ -65,10 +66,25 @@ class Column:
         self.Section = Section
         self.ConnectionConfig = ConnectionConfig
 
+class Bolt:
+    def __init__(self, Name, ShankDia, HeadLength, HeadDia):
+        self.Name = Name
+        self.ShankDia = ShankDia
+        self.HeadLength = HeadLength
+        self.HeadDia = HeadDia
+
+class Plate:
+    def __init__(self, Name, t):
+        self.Name = Name
+        self.t = t
+
 class Geometry:
-    def __init__(self, Beam, Column):
+    def __init__(self, Beam, BeamColumnClearance, Column, Bolt, Plate):
         self.Beam = Beam
+        self.BeamColumnClearance = BeamColumnClearance
         self.Column = Column
+        self.Bolt = Bolt
+        self.Plate = Plate
 
 class Model:
     def __init__(self, Name, Geometry):
@@ -81,12 +97,14 @@ class InputParameter:
         self.Models = Models
 
 def map_json_to_objects(file_path):
-    # Read the JSON file
     json_data = read_json_file(file_path)
     models = []
     for model_data in json_data['Models']:
         beam_data = model_data['Geometry']['Beam']
         column_data = model_data['Geometry']['Column']
+        bolt_data = model_data['Geometry']['Bolt']
+        plate_data = model_data['Geometry']['Plate']
+        beam_column_clearance = model_data['Geometry']['BeamColumnClearance']
         
         beam_section = Section(**beam_data['Section'])
         beam_connection_config = ConnectionConfig(**beam_data['ConnectionConfig'])
@@ -96,7 +114,10 @@ def map_json_to_objects(file_path):
         column_connection_config = ConnectionConfig(**column_data['ConnectionConfig'])
         column = Column(column_data['ClearHeight'], column_data['Name'], column_section, column_connection_config)
         
-        geometry = Geometry(beam, column)
+        bolt = Bolt(**bolt_data)
+        plate = Plate(**plate_data)
+        
+        geometry = Geometry(beam, beam_column_clearance, column, bolt, plate)
         model = Model(model_data['Name'], geometry)
         models.append(model)
     
