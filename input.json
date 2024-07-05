@@ -2,7 +2,7 @@
   "CaeName": "SteelConnection",
   "Models": [
     {
-      "Name": "Model - Steel Connection",
+      "Name": "SteelConnection - Model",
       "Geometry": {
         "Beam": {
           "Length": 1200,
@@ -14,7 +14,7 @@
             "c": 20
           },
           "ConnectionConfig": {
-            "NoL": 4, 
+            "NoL": 4,
             "NoT": 3,
             "PL": 100,
             "PT": 50,
@@ -53,6 +53,26 @@
           "Name": "Gusset Plate",
           "t": 3
         }
+      },
+      "SteelMaterial": {
+        "Fy": 350,
+        "Fu": 520,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.11083,
+        "Name": "Steel",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
+      },
+      "BoltMaterial": {
+        "Fy": 350,
+        "Fu": 520,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.11083,
+        "Name": "Bolt",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
       }
     }
   ]

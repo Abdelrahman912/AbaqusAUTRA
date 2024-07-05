@@ -162,12 +162,12 @@ cython_debug/
 #.idea/
 
 # Custom ignores
+*.pyc
 *.rpy
 *.rpy.2
 *.rpy.3
 *.rpy.4
 *.rpy.*
 *.rec
-*.pyc
 /output/
 /Demos/

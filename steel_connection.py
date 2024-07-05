@@ -488,6 +488,29 @@ def partition_plate(plate_part,beam,column,beam_col_clearance):
         #plate_part.PartitionCellByDatumPlane(datumPlane=plate_part.datums[datum_plane.id], cells=plate_part.cells)
 
 
+def define_bilinear_material(abaqus_model,material):
+    name = material.Name
+    E = material.E
+    v = material.v
+    description = material.Description
+    Fy = material.Fy
+    Fu = material.Fu
+    EpsPlasticY = material.EpsPlasticY
+    EpsPlasticU = material.EpsPlasticU
+    abaqus_mat = abaqus_model.Material(description=str(description), name=str(name))
+    abaqus_mat.Elastic(table=((E, v), ))
+    abaqus_mat.Plastic(table=((Fy, EpsPlasticY), (Fu, EpsPlasticU)))
+    return abaqus_mat
+    
+def define_solid_section(abaqus_model,material_name,section_name):
+    return abaqus_model.HomogeneousSolidSection(material=str(material_name), name=str(section_name), thickness=None)
+
+def assign_section_to_part(part,part_name,section_name):
+    set_name = part_name + '-Set'
+    part.Set(cells=part.cells.getSequenceFromMask(('[#1 ]', ), ), name=str(set_name))
+    part.SectionAssignment(region=part.sets[str(set_name)], sectionName=section_name, offset=0.0, offsetType=MIDDLE_SURFACE, offsetField='', 
+        thicknessAssignment=FROM_SECTION)
+
 
 def run_script(logging,input_params):
     logging.info(" Starting script... ")
@@ -517,7 +540,25 @@ def run_script(logging,input_params):
         bolt_part = create_bolt_part(abaqus_model,bolt,plate.t,beam.Section.t)
         # Create plate part
         plate_part = create_plate_part(abaqus_model,plate,beam,column,model.Geometry.BeamColumnClearance)
-        
+
+        ## Material ---------------------------------------------------------------------
+        logging.info("Defining materials...")
+        steel_material = model.SteelMaterial
+        bolt_material = model.BoltMaterial
+        abaqus_steel_mat = define_bilinear_material(abaqus_model,steel_material)
+        abaqus_bolt_mat = define_bilinear_material(abaqus_model,bolt_material)
+
+        ## Section ---------------------------------------------------------------------
+        logging.info("Defining sections...")
+        steel_section_name = "steel_section"
+        bolt_section_name = "bolt_section"
+        abaqus_steel_section = define_solid_section(abaqus_model,steel_material.Name,steel_section_name)
+        abaqus_bolt_section = define_solid_section(abaqus_model,bolt_material.Name,bolt_section_name)
+        assign_section_to_part(beam_part,beam.Name,steel_section_name)
+        assign_section_to_part(col_part,column.Name,steel_section_name)
+        assign_section_to_part(bolt_part,bolt.Name,bolt_section_name)
+        assign_section_to_part(plate_part,plate.Name,steel_section_name)
+
         ## Partitioning ---------------------------------------------------------------------
         logging.info("Partitioning parts...")
         partition_bolt(bolt_part)
@@ -531,7 +572,7 @@ def run_script(logging,input_params):
         
         logging.info("Saving model...")
         mdb.saveAs(pathName=str(input_params.CaeName + ".cae"))
-        logging.info(" Script finished... ")
+        logging.info("Script finished... ")
        
     
     

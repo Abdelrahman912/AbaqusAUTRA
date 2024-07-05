@@ -104,14 +104,29 @@ class Geometry:
         self.Plate = Plate
 
 class Model:
-    def __init__(self, Name, Geometry):
+    def __init__(self, Name, Geometry,SteelMaterial,BoltMaterial):
         self.Name = Name
         self.Geometry = Geometry
+        self.SteelMaterial = SteelMaterial
+        self.BoltMaterial = BoltMaterial
+
 
 class InputParameter:
     def __init__(self, CaeName, Models):
         self.CaeName = CaeName
         self.Models = Models
+
+class BiLinearMaterial:
+    def __init__(self, Fy, Fu, EpsPlasticY, EpsPlasticU, Name, Description, E, v):
+        self.Fy = Fy
+        self.Fu = Fu
+        self.EpsPlasticY = EpsPlasticY
+        self.EpsPlasticU = EpsPlasticU
+        self.Name = Name
+        self.Description = Description
+        self.E = E
+        self.v = v
+
 
 def map_json_to_objects(file_path):
     json_data = read_json_file(file_path)
@@ -135,7 +150,9 @@ def map_json_to_objects(file_path):
         plate = Plate(**plate_data)
         
         geometry = Geometry(beam, beam_column_clearance, column, bolt, plate)
-        model = Model(model_data['Name'], geometry)
+        steel_material = BiLinearMaterial(**model_data['SteelMaterial'])
+        bolt_material = BiLinearMaterial(**model_data['BoltMaterial'])
+        model = Model(model_data['Name'], geometry, steel_material, bolt_material)
         models.append(model)
     
     return InputParameter(json_data['CaeName'], models)
