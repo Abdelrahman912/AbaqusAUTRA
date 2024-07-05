@@ -342,8 +342,7 @@ def assemble_parts(abaqus_model,beam,column,plate,bolt,beam_part,column_part,bol
     -1.0), direction2=(0.0, -1.0, 0.0), instanceList=(bolt_inst_name, ), number1=c_nt, 
         number2=c_nl, spacing1=c_pl, spacing2=c_pt)
     
-
-    
+   
 def partition_bolt(bolt_part):
     # Longitudinal partition of bolt
     bolt_part.PartitionCellByPlaneThreePoints(cells=
@@ -369,7 +368,65 @@ def partition_bolt(bolt_part):
         ), datumPlane=bolt_part.datums[datum2.id])
 
 
+def get_conn_length_L(conn_config):
+    return (conn_config.NoL - 1) * conn_config.PL + 2 * conn_config.EL
 
+def get_conn_length_T(conn_config):
+    return (conn_config.NoT - 1) * conn_config.PT + 2 * conn_config.ET
+
+def partition_column(column_part,column):
+    conn_config = column.ConnectionConfig
+    nl = conn_config.NoL
+    nt = conn_config.NoT
+    pl = conn_config.PL
+    pt = conn_config.PT
+    el = conn_config.EL
+    et = conn_config.ET
+    r = conn_config.HoleDia/2.0
+    h = column.Section.h
+    t = column.Section.t
+    Lc_L = get_conn_length_L(conn_config) 
+    Lc_T = get_conn_length_T(conn_config)
+    # Longitudinal partition of column.s
+    col_height = column.ClearHeight
+    zo =   col_height - el
+    yo = -h/2.0 + et
+    for i in range(nt):
+        y = yo + i * pt
+        datum_plane = column_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y)
+        column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[datum_plane.id], cells=column_part.cells)
+    
+    
+    long_range =2*nl - 1
+    long_div =2.0
+    if(0.75 * pl <= el ):
+        long_range = nl
+        long_div = 1.0
+    for i in range( long_range):
+        z = zo - i * pl/long_div
+        datum_plane = column_part.DatumPlaneByPrincipalPlane(principalPlane=XYPLANE, offset=z)
+        column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[datum_plane.id], cells=column_part.cells)
+    
+    z = zo - (nl-1) * pl - el
+    datum_plane = column_part.DatumPlaneByPrincipalPlane(principalPlane=XYPLANE, offset=z)
+    column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[datum_plane.id], cells=column_part.cells)
+
+    # seperate the web from the flanges
+    y_l = -h/2.0 + t
+    y_u = h/2.0 - t
+
+    lower_datum = column_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y_l)
+    upper_datum = column_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y_u)
+    column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[lower_datum.id], cells=column_part.cells)
+    column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[upper_datum.id], cells=column_part.cells)
+
+    # partition the remaining part of the column (i.e. part with no holes)
+    n_part = 3.0
+    part_step = ( z ) / n_part
+    for i in range(1,int(n_part)):
+        z = z - part_step
+        datum_plane = column_part.DatumPlaneByPrincipalPlane(principalPlane=XYPLANE, offset=z)
+        column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[datum_plane.id], cells=column_part.cells)
     
 
 
@@ -405,6 +462,7 @@ def run_script(logging,input_params):
         ## Partitioning ---------------------------------------------------------------------
         logging.info("Partitioning parts...")
         partition_bolt(bolt_part)
+        partition_column(col_part,column)
 
         ## Assembly ---------------------------------------------------------------------
         logging.info("Assembling parts...")
