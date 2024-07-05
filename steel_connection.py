@@ -344,6 +344,31 @@ def assemble_parts(abaqus_model,beam,column,plate,bolt,beam_part,column_part,bol
     
 
     
+def partition_bolt(bolt_part):
+    # Longitudinal partition of bolt
+    bolt_part.PartitionCellByPlaneThreePoints(cells=
+        bolt_part.cells.getSequenceFromMask(('[#1 ]', ), 
+        ), point1=bolt_part.InterestingPoint(bolt_part.edges[5], CENTER), point2=bolt_part.vertices[5], point3=bolt_part.vertices[3])
+        
+    
+    bolt_part.PartitionCellByPlaneThreePoints(cells=
+        bolt_part.cells.getSequenceFromMask(('[#3 ]', ), 
+        ), point1=bolt_part.InterestingPoint(
+        bolt_part.edges[14], CENTER), point2=
+        bolt_part.InterestingPoint(
+        bolt_part.edges[14], MIDDLE), point3=
+        bolt_part.InterestingPoint(
+        bolt_part.edges[16], MIDDLE))
+    
+    datum1 = bolt_part.DatumPlaneByOffset(flip=SIDE1, offset=0.0,  plane=bolt_part.faces[28])
+    datum2 = bolt_part.DatumPlaneByOffset(flip=SIDE1, offset=0.0, plane=bolt_part.faces[13])
+    bolt_part.PartitionCellByDatumPlane(cells= bolt_part.cells.getSequenceFromMask(('[#f ]', ), 
+        ), datumPlane=bolt_part.datums[datum1.id])
+    bolt_part.PartitionCellByDatumPlane(cells=
+        bolt_part.cells.getSequenceFromMask(('[#b8 ]', ), 
+        ), datumPlane=bolt_part.datums[datum2.id])
+
+
 
     
 
@@ -377,6 +402,10 @@ def run_script(logging,input_params):
         # Create plate part
         plate_part = create_plate_part(abaqus_model,plate,beam,column,model.Geometry.BeamColumnClearance)
         
+        ## Partitioning ---------------------------------------------------------------------
+        logging.info("Partitioning parts...")
+        partition_bolt(bolt_part)
+
         ## Assembly ---------------------------------------------------------------------
         logging.info("Assembling parts...")
         assemble_parts(abaqus_model,beam,column,plate,bolt,beam_part,col_part,bolt_part,plate_part,beam_col_clearance)

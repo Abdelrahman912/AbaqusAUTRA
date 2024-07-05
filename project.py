@@ -483,7 +483,12 @@ mdb.models['Model-1'].parts['Csection-beam'].SectionAssignment(offset=0.0,
     'Csection-plate', thicknessAssignment=FROM_SECTION)
 
 
+
+
+
+
 # create partition
+# partition the beam
 mdb.models['Model-1'].parts['Csection-beam'].PartitionCellByPlaneThreePoints(
     cells=
     mdb.models['Model-1'].parts['Csection-beam'].cells.getSequenceFromMask((
@@ -600,6 +605,8 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
+
+# partition the column
 mdb.models['Model-1'].parts['Csection-column'].PartitionCellByPlaneThreePoints(
     cells=
     mdb.models['Model-1'].parts['Csection-column'].cells.getSequenceFromMask((
@@ -711,12 +718,15 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
+
+# partition the bolt
 mdb.models['Model-1'].parts['bolt'].PartitionCellByPlaneThreePoints(cells=
     mdb.models['Model-1'].parts['bolt'].cells.getSequenceFromMask(('[#1 ]', ), 
     ), point1=mdb.models['Model-1'].parts['bolt'].InterestingPoint(
     mdb.models['Model-1'].parts['bolt'].edges[5], CENTER), point2=
     mdb.models['Model-1'].parts['bolt'].vertices[5], point3=
     mdb.models['Model-1'].parts['bolt'].vertices[3])
+
 mdb.models['Model-1'].parts['bolt'].PartitionCellByPlaneThreePoints(cells=
     mdb.models['Model-1'].parts['bolt'].cells.getSequenceFromMask(('[#3 ]', ), 
     ), point1=mdb.models['Model-1'].parts['bolt'].InterestingPoint(
@@ -725,6 +735,7 @@ mdb.models['Model-1'].parts['bolt'].PartitionCellByPlaneThreePoints(cells=
     mdb.models['Model-1'].parts['bolt'].edges[14], MIDDLE), point3=
     mdb.models['Model-1'].parts['bolt'].InterestingPoint(
     mdb.models['Model-1'].parts['bolt'].edges[16], MIDDLE))
+
 mdb.models['Model-1'].parts['bolt'].DatumPlaneByOffset(flip=SIDE1, offset=0.0, 
     plane=mdb.models['Model-1'].parts['bolt'].faces[28])
 mdb.models['Model-1'].parts['bolt'].DatumPlaneByOffset(flip=SIDE1, offset=0.0, 
@@ -735,6 +746,8 @@ mdb.models['Model-1'].parts['bolt'].PartitionCellByDatumPlane(cells=
 mdb.models['Model-1'].parts['bolt'].PartitionCellByDatumPlane(cells=
     mdb.models['Model-1'].parts['bolt'].cells.getSequenceFromMask(('[#b8 ]', ), 
     ), datumPlane=mdb.models['Model-1'].parts['bolt'].datums[8])
+
+# partition the plate
 mdb.models['Model-1'].parts['plate'].PartitionCellByPlaneThreePoints(cells=
     mdb.models['Model-1'].parts['plate'].cells.getSequenceFromMask(('[#1 ]', ), 
     ), point1=mdb.models['Model-1'].parts['plate'].InterestingPoint(
@@ -837,6 +850,11 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
+
+
+
+
+
 
 
 
