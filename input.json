@@ -15,11 +15,11 @@
           },
           "ConnectionConfig": {
             "NoL": 4, 
-            "NoT": 4,
+            "NoT": 3,
             "PL": 100,
             "PT": 50,
             "EL": 50,
-            "ET": 25,
+            "ET": 50,
             "HoleDia": 14
           }
         },
@@ -35,11 +35,11 @@
           },
           "ConnectionConfig": {
             "NoL": 3,
-            "NoT": 4,
+            "NoT": 3,
             "PL": 50,
             "PT": 50,
             "EL": 50,
-            "ET": 25,
+            "ET": 50,
             "HoleDia": 14
           }
         },

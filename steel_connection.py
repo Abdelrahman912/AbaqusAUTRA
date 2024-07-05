@@ -64,6 +64,7 @@ def create_csection_part(abaqus_model,section,length,part_name,conn_config):
     abaqus_model.parts[str(part_name)].BaseSolidExtrude(depth=length, 
         sketch=abaqus_model.sketches['__profile__'])
     del abaqus_model.sketches['__profile__']
+    
     # create holes
     # choose face to sketch on
     abaqus_model.ConstrainedSketch(gridSpacing=60.84, name=
@@ -102,8 +103,9 @@ def create_csection_part(abaqus_model,section,length,part_name,conn_config):
     OFF, sketch=abaqus_model.sketches['__profile__'], 
     sketchOrientation=RIGHT, sketchPlane=
     abaqus_model.parts[str(part_name)].faces[10], sketchPlaneSide=
-    SIDE1, sketchUpEdge=abaqus_model.parts[str(part_name)].edges[33], upToFace=
-        abaqus_model.parts[str(part_name)].faces[4])
+    SIDE1, sketchUpEdge=abaqus_model.parts[str(part_name)].edges[33], depth=t)
+
+    #upToFace=abaqus_model.parts[str(part_name)].faces[4])
     del abaqus_model.sketches['__profile__']
     return c_part
 
@@ -374,8 +376,8 @@ def get_conn_length_L(conn_config):
 def get_conn_length_T(conn_config):
     return (conn_config.NoT - 1) * conn_config.PT + 2 * conn_config.ET
 
-def partition_column(column_part,column):
-    conn_config = column.ConnectionConfig
+def partition_c_part(c_part,c_input_model,part_length):
+    conn_config = c_input_model.ConnectionConfig
     nl = conn_config.NoL
     nt = conn_config.NoT
     pl = conn_config.PL
@@ -383,18 +385,16 @@ def partition_column(column_part,column):
     el = conn_config.EL
     et = conn_config.ET
     r = conn_config.HoleDia/2.0
-    h = column.Section.h
-    t = column.Section.t
-    Lc_L = get_conn_length_L(conn_config) 
-    Lc_T = get_conn_length_T(conn_config)
+    h = c_input_model.Section.h
+    t = c_input_model.Section.t
     # Longitudinal partition of column.s
-    col_height = column.ClearHeight
-    zo =   col_height - el
+    length = part_length
+    zo =   length - el
     yo = -h/2.0 + et
     for i in range(nt):
         y = yo + i * pt
-        datum_plane = column_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y)
-        column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[datum_plane.id], cells=column_part.cells)
+        datum_plane = c_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y)
+        c_part.PartitionCellByDatumPlane(datumPlane=c_part.datums[datum_plane.id], cells=c_part.cells)
     
     
     long_range =2*nl - 1
@@ -404,30 +404,89 @@ def partition_column(column_part,column):
         long_div = 1.0
     for i in range( long_range):
         z = zo - i * pl/long_div
-        datum_plane = column_part.DatumPlaneByPrincipalPlane(principalPlane=XYPLANE, offset=z)
-        column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[datum_plane.id], cells=column_part.cells)
+        datum_plane = c_part.DatumPlaneByPrincipalPlane(principalPlane=XYPLANE, offset=z)
+        c_part.PartitionCellByDatumPlane(datumPlane=c_part.datums[datum_plane.id], cells=c_part.cells)
     
     z = zo - (nl-1) * pl - el
-    datum_plane = column_part.DatumPlaneByPrincipalPlane(principalPlane=XYPLANE, offset=z)
-    column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[datum_plane.id], cells=column_part.cells)
+    datum_plane = c_part.DatumPlaneByPrincipalPlane(principalPlane=XYPLANE, offset=z)
+    c_part.PartitionCellByDatumPlane(datumPlane=c_part.datums[datum_plane.id], cells=c_part.cells)
 
     # seperate the web from the flanges
     y_l = -h/2.0 + t
     y_u = h/2.0 - t
 
-    lower_datum = column_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y_l)
-    upper_datum = column_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y_u)
-    column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[lower_datum.id], cells=column_part.cells)
-    column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[upper_datum.id], cells=column_part.cells)
+    lower_datum = c_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y_l)
+    upper_datum = c_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y_u)
+    c_part.PartitionCellByDatumPlane(datumPlane=c_part.datums[lower_datum.id], cells=c_part.cells)
+    c_part.PartitionCellByDatumPlane(datumPlane=c_part.datums[upper_datum.id], cells=c_part.cells)
 
     # partition the remaining part of the column (i.e. part with no holes)
     n_part = 3.0
     part_step = ( z ) / n_part
     for i in range(1,int(n_part)):
         z = z - part_step
-        datum_plane = column_part.DatumPlaneByPrincipalPlane(principalPlane=XYPLANE, offset=z)
-        column_part.PartitionCellByDatumPlane(datumPlane=column_part.datums[datum_plane.id], cells=column_part.cells)
+        datum_plane = c_part.DatumPlaneByPrincipalPlane(principalPlane=XYPLANE, offset=z)
+        c_part.PartitionCellByDatumPlane(datumPlane=c_part.datums[datum_plane.id], cells=c_part.cells)
     
+def partition_plate(plate_part,beam,column,beam_col_clearance):
+    # beam part
+    beam_height = beam.Section.h
+    b_nl = beam.ConnectionConfig.NoL
+    b_nt = beam.ConnectionConfig.NoT
+    b_pl = beam.ConnectionConfig.PL
+    b_pt = beam.ConnectionConfig.PT
+    b_el = beam.ConnectionConfig.EL
+    b_et = beam.ConnectionConfig.ET
+
+    #partitions that are extended in the direction of the beam (Longitudinal partitions)
+    yo = -b_et
+    for i in range(b_nt):
+        y = yo - i * b_pt
+        datum_plane = plate_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y)
+        plate_part.PartitionCellByDatumPlane(datumPlane=plate_part.datums[datum_plane.id], cells=plate_part.cells)
+    
+
+    # partition the mid of the clearance between the beam and the column
+    y = -beam_height - beam_col_clearance/2.0
+    datum_plane = plate_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y)
+    plate_part.PartitionCellByDatumPlane(datumPlane=plate_part.datums[datum_plane.id], cells=plate_part.cells)
+
+    # partitions that are extended in the direction of the column (Transverse partitions)
+    long_range =2*b_nl - 1
+    long_div =2.0
+    if(0.75 * b_pl <= b_el ):
+        long_range = b_nl
+        long_div = 1.0
+    xo = b_el
+    for i in range(long_range):
+        x = xo + i * b_pl/long_div
+        datum_plane = plate_part.DatumPlaneByPrincipalPlane(principalPlane=YZPLANE, offset=x)
+        plate_part.PartitionCellByDatumPlane(datumPlane=plate_part.datums[datum_plane.id], cells=plate_part.cells)
+
+    # column part
+    column_height = column.Section.h
+    c_nl = column.ConnectionConfig.NoL
+    c_nt = column.ConnectionConfig.NoT
+    c_pl = column.ConnectionConfig.PL
+    c_pt = column.ConnectionConfig.PT
+    c_el = column.ConnectionConfig.EL
+    c_et = column.ConnectionConfig.ET
+
+    #partitions that are extended in the direction of the beam (Longitudinal partitions)
+    yo = -beam_height - beam_col_clearance - c_el
+    for i in range(c_nl):
+        y = yo - i * c_pl
+        datum_plane = plate_part.DatumPlaneByPrincipalPlane(principalPlane=XZPLANE, offset=y)
+        plate_part.PartitionCellByDatumPlane(datumPlane=plate_part.datums[datum_plane.id], cells=plate_part.cells)
+    
+    # partitions that are extended in the direction of the column (Transverse partitions)
+    #TODO: find a better way to partition the plate in the area where the column is connected
+    #xo = c_et
+    #for i in range(c_nt):
+        #x = xo + i * c_pt
+        #datum_plane = plate_part.DatumPlaneByPrincipalPlane(principalPlane=YZPLANE, offset=x)
+        #plate_part.PartitionCellByDatumPlane(datumPlane=plate_part.datums[datum_plane.id], cells=plate_part.cells)
+
 
 
 def run_script(logging,input_params):
@@ -462,7 +521,9 @@ def run_script(logging,input_params):
         ## Partitioning ---------------------------------------------------------------------
         logging.info("Partitioning parts...")
         partition_bolt(bolt_part)
-        partition_column(col_part,column)
+        partition_c_part(col_part,column,column.ClearHeight)
+        partition_c_part(beam_part,beam,beam.Length)
+        partition_plate(plate_part,beam,column,beam_col_clearance)
 
         ## Assembly ---------------------------------------------------------------------
         logging.info("Assembling parts...")
