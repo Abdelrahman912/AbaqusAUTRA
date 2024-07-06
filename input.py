@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from sys import __stdout__
+from sys import __stdout__, __stderr__ 
 
 def read_json_file(file_path):
     with open(file_path, 'r') as file:
@@ -28,7 +28,7 @@ class StandardLogger:
        print >> __stdout__, message
 
     def error(self, message):
-        print >> __stdout__, message
+        print >> __stderr__, message
 
 
     def warning(self, message):
@@ -104,11 +104,14 @@ class Geometry:
         self.Plate = Plate
 
 class Model:
-    def __init__(self, Name, Geometry,SteelMaterial,BoltMaterial):
+    def __init__(self, Name, Geometry,SteelMaterial,BoltMaterial,LoadingStep,Contact):
         self.Name = Name
         self.Geometry = Geometry
         self.SteelMaterial = SteelMaterial
         self.BoltMaterial = BoltMaterial
+        self.LoadingStep = LoadingStep
+        self.Contact = Contact
+
 
 
 class InputParameter:
@@ -126,6 +129,23 @@ class BiLinearMaterial:
         self.Description = Description
         self.E = E
         self.v = v
+
+
+class LoadingStep:
+    def __init__(self, Name, StepType, TimePeriod, InitialInc, MinInc, MaxNumInc):
+        self.Name = Name
+        self.StepType = StepType
+        self.TimePeriod = TimePeriod
+        self.InitialInc = InitialInc
+        self.MinInc = MinInc
+        self.MaxNumInc = MaxNumInc
+
+class Contact:
+    def __init__(self, Name, FrictionCoeff):
+        self.Name = Name
+        self.FrictionCoeff = FrictionCoeff
+
+
 
 
 def map_json_to_objects(file_path):
@@ -152,7 +172,9 @@ def map_json_to_objects(file_path):
         geometry = Geometry(beam, beam_column_clearance, column, bolt, plate)
         steel_material = BiLinearMaterial(**model_data['SteelMaterial'])
         bolt_material = BiLinearMaterial(**model_data['BoltMaterial'])
-        model = Model(model_data['Name'], geometry, steel_material, bolt_material)
+        loading_step = LoadingStep(**model_data['LoadingStep'])
+        contact = Contact(**model_data['Contact'])
+        model = Model(model_data['Name'], geometry, steel_material, bolt_material, loading_step, contact)
         models.append(model)
     
     return InputParameter(json_data['CaeName'], models)

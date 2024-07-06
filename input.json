@@ -69,10 +69,22 @@
         "Fu": 520,
         "EpsPlasticY": 0,
         "EpsPlasticU": 0.11083,
-        "Name": "Bolt",
+        "Name": "Steel",
         "Description": null,
         "E": 210000,
         "v": 0.33
+      },
+      "LoadingStep": {
+        "Name": "Loading step",
+        "StepType": "DYNAMIC_IMPLICIT",
+        "TimePeriod": 40,
+        "InitialInc": 0.001,
+        "MinInc": 1E-15,
+        "MaxNumInc": 10000
+      },
+      "Contact": {
+        "Name": "steel contact property",
+        "FrictionCoeff": 0.35
       }
     }
   ]

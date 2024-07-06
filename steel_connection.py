@@ -512,6 +512,42 @@ def assign_section_to_part(part,part_name,section_name):
         thicknessAssignment=FROM_SECTION)
 
 
+DYNAMIC_IMPLICIT = 'DYNAMIC_IMPLICIT'
+STATIC_GENERAL = 'STATIC_GENERAL'
+
+def define_dynamic_implicit_step(abaqus_model,loading_step):
+    name = loading_step.Name
+    time_period = loading_step.TimePeriod
+    initial_inc = loading_step.InitialInc
+    min_inc = loading_step.MinInc
+    max_num_inc = loading_step.MaxNumInc
+    return abaqus_model.ImplicitDynamicsStep(alpha=DEFAULT, amplitude=RAMP, 
+        application=QUASI_STATIC, initialConditions=OFF, initialInc=initial_inc, 
+        maxNumInc=max_num_inc, minInc=min_inc, name=str(name)
+        , nlgeom=ON, nohaf=OFF, previous='Initial', timePeriod=time_period)
+   
+
+def define_contact_interaction(abaqus_model,contact):
+    name = contact.Name
+    fric_coeff = contact.FrictionCoeff
+    contact_prop = abaqus_model.ContactProperty(str(name))
+    contact_prop.TangentialBehavior(
+        dependencies=0, directionality=ISOTROPIC, elasticSlipStiffness=None, 
+        formulation=PENALTY, fraction=0.005, maximumElasticSlip=FRACTION, 
+        pressureDependency=OFF, shearStressLimit=None, slipRateDependency=OFF, 
+        table=((fric_coeff, ), ), temperatureDependency=OFF)
+
+    contact_prop.NormalBehavior(
+        allowSeparation=ON, constraintEnforcementMethod=DEFAULT, 
+        pressureOverclosure=HARD)
+    int_name = 'Int - ' + name
+    int_prop = abaqus_model.ContactStd(createStepName='Initial', name=str(int_name))
+    int_prop.includedPairs.setValuesInStep(
+        stepName='Initial', useAllstar=ON)
+    int_prop.contactPropertyAssignments.appendInStep(
+        assignments=((GLOBAL, SELF, str(name)), ), stepName='Initial')
+
+
 def run_script(logging,input_params):
     logging.info(" Starting script... ")
     models = input_params.Models
@@ -570,6 +606,21 @@ def run_script(logging,input_params):
         logging.info("Assembling parts...")
         assemble_parts(abaqus_model,beam,column,plate,bolt,beam_part,col_part,bolt_part,plate_part,beam_col_clearance)
         
+        ## Step ---------------------------------------------------------------------
+        logging.info("Defining steps...")
+        loading_step = model.LoadingStep
+        step_type = loading_step.StepType
+        if step_type == DYNAMIC_IMPLICIT:
+            abaqus_step = define_dynamic_implicit_step(abaqus_model,loading_step)
+        else:
+            logging.error("Saving model...")
+            raise ValueError("Step type not supported")
+        
+        ## Interaction ---------------------------------------------------------------------
+        logging.info("Defining interactions...")
+        contact = model.Contact
+        define_contact_interaction(abaqus_model,contact)
+
         logging.info("Saving model...")
         mdb.saveAs(pathName=str(input_params.CaeName + ".cae"))
         logging.info("Script finished... ")
