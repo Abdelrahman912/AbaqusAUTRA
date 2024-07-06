@@ -86,9 +86,34 @@
         "Name": "steel contact property",
         "FrictionCoeff": 0.35
       },
-      "Load":{
-        "Name":"cyclic load",
-        "File":"cyclic_load.csv"
+      "Load": {
+        "Name": "cyclic load",
+        "File": "cyclic_load.csv"
+      },
+      "BoltMesh": {
+        "ElementType": {
+          "GeometricOrder": "LINEAR"
+        },
+        "Seed": {
+          "PartSeedSize": 3.5
+        }
+      },
+      "PlateMesh": {
+        "ElementType": {
+          "GeometricOrder": "LINEAR"
+        },
+        "Seed": {
+          "PartSeedSize": 15
+        }
+      },
+      "SteelMesh": {
+        "ElementType": {
+          "GeometricOrder": "LINEAR"
+        },
+        "Seed": {
+          "EdgeSeedSize": 50,
+          "PartSeedSize": 15
+        }
       }
     }
   ]

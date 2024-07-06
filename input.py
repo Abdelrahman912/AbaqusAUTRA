@@ -131,7 +131,7 @@ class Geometry:
         self.Plate = Plate
 
 class Model:
-    def __init__(self, Name, Geometry,SteelMaterial,BoltMaterial,LoadingStep,Contact,load):
+    def __init__(self, Name, Geometry,SteelMaterial,BoltMaterial,LoadingStep,Contact,load, BoltMesh, PlateMesh, SteelMesh):
         self.Name = Name
         self.Geometry = Geometry
         self.SteelMaterial = SteelMaterial
@@ -139,6 +139,9 @@ class Model:
         self.LoadingStep = LoadingStep
         self.Contact = Contact
         self.Load = load
+        self.BoltMesh = BoltMesh
+        self.PlateMesh = PlateMesh
+        self.SteelMesh = SteelMesh
 
 
 
@@ -181,6 +184,24 @@ class Load:
         self.LoadData = load
 
 
+class AdaptiveSeed:
+    def __init__(self, EdgeSeedSize, PartSeedSize):
+        self.EdgeSeedSize = EdgeSeedSize
+        self.PartSeedSize = PartSeedSize
+
+class Seed:
+    def __init__(self,PartSeedSize):
+        self.PartSeedSize = PartSeedSize
+
+class ElementType:
+    def __init__(self, GeometricOrder):
+        self.GeometricOrder = GeometricOrder
+
+class Mesh:
+    def __init__(self, ElementType, Seed):
+        self.ElementType = ElementType
+        self.Seed = Seed
+
 
 def map_json_to_objects(file_path):
     json_data = read_json_file(file_path)
@@ -212,7 +233,10 @@ def map_json_to_objects(file_path):
         load_file_name = model_data['Load']['File']
         load_data = read_csv_to_tuples(load_file_name)
         load = Load(load_name, load_data)
-        model = Model(model_data['Name'], geometry, steel_material, bolt_material, loading_step, contact,load)
+        bolt_mesh = Mesh(ElementType(**model_data['BoltMesh']['ElementType']),Seed(**model_data['BoltMesh']['Seed']))
+        plate_mesh = Mesh(ElementType(**model_data['PlateMesh']['ElementType']),Seed(**model_data['PlateMesh']['Seed']))
+        steel_mesh = Mesh(ElementType(**model_data['SteelMesh']['ElementType']),AdaptiveSeed(**model_data['SteelMesh']['Seed']))
+        model = Model(model_data['Name'], geometry, steel_material, bolt_material, loading_step, contact,load, bolt_mesh, plate_mesh, steel_mesh)
         models.append(model)
     
     return InputParameter(json_data['CaeName'], models)

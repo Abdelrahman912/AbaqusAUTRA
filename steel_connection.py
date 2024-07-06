@@ -12,9 +12,16 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
+import regionToolset
 from sys import __stdout__
 
 
+#constants
+DYNAMIC_IMPLICIT = 'DYNAMIC_IMPLICIT'
+STATIC_GENERAL = 'STATIC_GENERAL'
+
+LINEAR = 'LINEAR'
+QUADRATIC = 'QUADRATIC'
 
 def create_model(model_name):
     """
@@ -512,8 +519,7 @@ def assign_section_to_part(part,part_name,section_name):
         thicknessAssignment=FROM_SECTION)
 
 
-DYNAMIC_IMPLICIT = 'DYNAMIC_IMPLICIT'
-STATIC_GENERAL = 'STATIC_GENERAL'
+
 
 def define_dynamic_implicit_step(abaqus_model,loading_step):
     name = loading_step.Name
@@ -633,6 +639,109 @@ def define_fixation(abaqus_model,ref_point):
         region=Region(referencePoints=(abaqus_model.rootAssembly.referencePoints[ref_point.id], )), u1=SET, u2=SET, 
         u3=SET, ur1=SET, ur2=SET, ur3=SET)
 
+def get_eletype_from_geom_order(geom_order):
+    if geom_order == LINEAR:
+        elemTypes=(ElemType(
+            elemCode=C3D8R, elemLibrary=STANDARD, secondOrderAccuracy=OFF, 
+            kinematicSplit=AVERAGE_STRAIN, hourglassControl=DEFAULT, 
+            distortionControl=DEFAULT), ElemType(elemCode=C3D6, elemLibrary=STANDARD, 
+            secondOrderAccuracy=OFF, distortionControl=DEFAULT), ElemType(
+            elemCode=C3D4, elemLibrary=STANDARD, secondOrderAccuracy=OFF, 
+            distortionControl=DEFAULT))
+        return elemTypes
+    elif geom_order == QUADRATIC:
+        #TODO: check if this is correct
+        elemTypes=(ElemType(
+            elemCode=C3D20R, elemLibrary=STANDARD, secondOrderAccuracy=OFF, 
+            kinematicSplit=AVERAGE_STRAIN, hourglassControl=DEFAULT, 
+            distortionControl=DEFAULT), ElemType(elemCode=C3D15, elemLibrary=STANDARD, 
+            secondOrderAccuracy=OFF, distortionControl=DEFAULT), ElemType(
+            elemCode=C3D10, elemLibrary=STANDARD, secondOrderAccuracy=OFF, 
+            distortionControl=DEFAULT))
+        return elemTypes
+    else:
+        raise ValueError("Element order not supported")
+
+
+def get_all_part_cells_region(part):
+    # Get all cells in the part
+    all_cells = part.cells[:]
+
+    # Define the regions with all cells
+    regions = ((all_cells), )
+    return regions
+
+def get_all_part_faces_region(part):
+    # Get all cells in the part
+    all_faces = part.faces[:]
+
+    # Define the regions with all cells
+    regions = (all_faces, )
+    return regions
+
+
+def define_constant_mesh_size(abaqus_part,mesh_params):
+    # Define Element type
+    geom_order = mesh_params.ElementType.GeometricOrder
+    elemTypes = get_eletype_from_geom_order(geom_order)
+    all_cells = abaqus_part.cells[:]
+    regions = regionToolset.Region(cells=all_cells)
+    abaqus_part.setElementType(regions=regions, elemTypes=elemTypes)
+
+    # Define Mesh Algorithm
+    abaqus_part.setMeshControls(algorithm=ADVANCING_FRONT, elemShape=HEX, regions=all_cells, technique=SWEEP)
+        
+    # Define Element Size
+    part_seed_size = mesh_params.Seed.PartSeedSize
+    abaqus_part.seedPart(deviationFactor=0.1, minSizeFactor=0.1, size=part_seed_size)
+
+    # Generate Mesh
+    abaqus_part.generateMesh()
+
+def get_beam_edge_mesh_boundingbox(beam):
+    # get the bounding box that encompass all the edges that are away from the connection
+    # here we are working with part coordinates
+    xo = 0.0
+    yo = 0.0
+    zo = 0.0
+    Lc = get_conn_length_L(beam.ConnectionConfig)
+    L = beam.Length
+    h = beam.Section.h
+    b = beam.Section.b
+    return [xo-b,xo+b, yo - h*1.1, yo + h*1.1, zo - 10, L-Lc*0.8]
+
+def get_column_edge_mesh_boundingbox(column):
+    # get the bounding box that encompass all the edges that are away from the connection
+    # here we are working with part coordinates
+    xo = 0.0
+    yo = 0.0
+    zo = 0.0
+    Lc = get_conn_length_L(column.ConnectionConfig)
+    L = column.ClearHeight
+    h = column.Section.h
+    b = column.Section.b
+    return [xo-b,xo+b, yo - h*1.1, yo + h*1.1, zo - 10, L-Lc*0.8]
+
+def define_adaptive_mesh_size(abaqus_part,adaptive_mesh_params,bounding_box_func):
+    # Define Element type
+    geom_order = adaptive_mesh_params.ElementType.GeometricOrder
+    elemTypes = get_eletype_from_geom_order(geom_order)
+    all_cells = abaqus_part.cells[:]
+    regions = regionToolset.Region(cells=all_cells)
+    abaqus_part.setElementType(regions=regions, elemTypes=elemTypes)
+
+    # Define Mesh Algorithm
+    abaqus_part.setMeshControls(algorithm=ADVANCING_FRONT, elemShape=HEX, regions=all_cells, technique=SWEEP)
+        
+    # Define Element Size
+    part_seed_size = adaptive_mesh_params.Seed.PartSeedSize
+    edge_seed_size = adaptive_mesh_params.Seed.EdgeSeedSize
+    abaqus_part.seedPart(deviationFactor=0.1, minSizeFactor=0.1, size=part_seed_size)
+    edges = get_by_bbox(abaqus_part.edges, bounding_box_func())
+    abaqus_part.seedEdgeBySize(edges=edges, size=edge_seed_size, constraint=FINER)
+
+    # Generate Mesh
+    abaqus_part.generateMesh()
 
 def run_script(logging,input_params):
     logging.info(" Starting script... ")
@@ -691,7 +800,7 @@ def run_script(logging,input_params):
         ## Assembly ---------------------------------------------------------------------
         logging.info("Assembling parts...")
         assemble_parts(abaqus_model,beam,column,plate,bolt,beam_part,col_part,bolt_part,plate_part,beam_col_clearance)
-        
+
         ## Step ---------------------------------------------------------------------
         logging.info("Defining steps...")
         loading_step = model.LoadingStep
@@ -726,12 +835,26 @@ def run_script(logging,input_params):
         fixed_support_bb = get_column_fixed_point_boundingbox(fixed_support_coords,column)
         define_rigid_body_constraint(abaqus_model,column.Name,fixed_support_bb,fixed_support_ref_point,fixed_support_constraint_name,fixed_support_set_name)
 
-        ## Boundary Conditions ---------------------------------------------------------------------
-        logging.info("Defining boundary conditions...")
         # Define cyclic load
         define_cyclic_load(abaqus_model,model.Load,loading_step.Name,beam_loading_ref_point)
         # Define fixation
         define_fixation(abaqus_model,fixed_support_ref_point)
+
+        ## Meshing ---------------------------------------------------------------------
+        logging.info("Meshing parts...")
+        # Mesh Bolt
+        bolt_mesh = model.BoltMesh
+        define_constant_mesh_size(bolt_part,bolt_mesh)
+        # Mesh Plate
+        plate_mesh = model.PlateMesh
+        define_constant_mesh_size(plate_part,plate_mesh)
+        # Mesh Beam
+        beam_mesh = model.SteelMesh
+        define_adaptive_mesh_size(beam_part,beam_mesh,lambda : get_beam_edge_mesh_boundingbox(beam))
+        # Mesh Column
+        column_mesh = model.SteelMesh
+        define_adaptive_mesh_size(col_part,column_mesh,lambda : get_column_edge_mesh_boundingbox(column))
+
 
         logging.info("Saving model...")
         mdb.saveAs(pathName=str(input_params.CaeName + ".cae"))

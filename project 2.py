@@ -1050,6 +1050,8 @@ mdb.models['Model-1'].DisplacementBC(amplitude='cyclic', createStepName=
     mdb.models['Model-1'].rootAssembly.sets['Set-6'], u1=0.0, u2=1.0, u3=UNSET, 
     ur1=UNSET, ur2=0.0, ur3=0.0)
 
+
+# mesh
 mdb.models['Model-1'].parts['plate'].seedPart(deviationFactor=0.1, 
     minSizeFactor=0.1, size=5.5)
 mdb.models['Model-1'].parts['plate'].setElementType(elemTypes=(ElemType(
@@ -1142,8 +1144,12 @@ mdb.models['Model-1'].parts['plate'].PartitionCellByPlaneNormalToEdge(cells=
     mdb.models['Model-1'].parts['plate'].edges[464], point=
     mdb.models['Model-1'].parts['plate'].vertices[235])
 mdb.models['Model-1'].parts['plate'].deleteMesh()
+
+
 mdb.models['Model-1'].parts['plate'].seedPart(deviationFactor=0.1, 
     minSizeFactor=0.1, size=3.6)
+
+
 mdb.models['Model-1'].parts['plate'].setElementType(elemTypes=(ElemType(
     elemCode=C3D8R, elemLibrary=STANDARD, secondOrderAccuracy=OFF, 
     kinematicSplit=AVERAGE_STRAIN, hourglassControl=DEFAULT, 
@@ -1199,8 +1205,12 @@ mdb.models['Model-1'].parts['plate'].deleteMesh(regions=
 mdb.models['Model-1'].parts['plate'].deleteSeeds(regions=
     mdb.models['Model-1'].parts['plate'].edges.getSequenceFromMask((
     '[#ffffffff:19 #1 ]', ), ))
+
+
+
 mdb.models['Model-1'].parts['plate'].seedPart(deviationFactor=0.1, 
     minSizeFactor=0.1, size=3.6)
+
 mdb.models['Model-1'].parts['plate'].setElementType(elemTypes=(ElemType(
     elemCode=C3D8R, elemLibrary=STANDARD, secondOrderAccuracy=OFF, 
     kinematicSplit=AVERAGE_STRAIN, hourglassControl=DEFAULT, 
@@ -1210,6 +1220,7 @@ mdb.models['Model-1'].parts['plate'].setElementType(elemTypes=(ElemType(
     distortionControl=DEFAULT)), regions=(
     mdb.models['Model-1'].parts['plate'].cells.getSequenceFromMask((
     '[#ffffffff #3ffffff ]', ), ), ))
+
 mdb.models['Model-1'].parts['plate'].setMeshControls(algorithm=MEDIAL_AXIS, 
     elemShape=HEX, regions=
     mdb.models['Model-1'].parts['plate'].cells.getSequenceFromMask((
@@ -1219,6 +1230,10 @@ mdb.models['Model-1'].parts['plate'].deleteMesh()
 mdb.models['Model-1'].parts['plate'].seedPart(deviationFactor=0.1, 
     minSizeFactor=0.1, size=7.0)
 mdb.models['Model-1'].parts['plate'].generateMesh()
+
+
+
+
 mdb.models['Model-1'].parts['Csection-beam'].PartitionCellByPlaneNormalToEdge(
     cells=
     mdb.models['Model-1'].parts['Csection-beam'].cells.getSequenceFromMask((
