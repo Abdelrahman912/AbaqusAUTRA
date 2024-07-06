@@ -2,6 +2,33 @@ import json
 import logging
 import os
 from sys import __stdout__, __stderr__ 
+import csv
+
+def read_csv_to_tuples(file_path):
+    # Initialize an empty list to store the tuples
+    data_tuples = []
+    
+    # Open the CSV file and create a reader object
+    with open(file_path, mode='r') as file:
+        csv_reader = csv.reader(file)
+        
+        # Skip the header row
+        next(csv_reader)
+        
+        # Iterate over the rows in the CSV file
+        for row in csv_reader:
+            # Convert each row to a tuple and append to the list
+            data_tuples.append((float(row[0]), float(row[1])))
+    
+    # Convert the list of tuples to a tuple of tuples
+    result = tuple(data_tuples)
+    
+    return result
+
+# Example usage (commented out to prevent execution here):
+# file_path = 'path_to_your_file.xlsx'
+# data_tuples = read_excel_to_tuples(file_path)
+# print(data_tuples)
 
 def read_json_file(file_path):
     with open(file_path, 'r') as file:
@@ -104,13 +131,14 @@ class Geometry:
         self.Plate = Plate
 
 class Model:
-    def __init__(self, Name, Geometry,SteelMaterial,BoltMaterial,LoadingStep,Contact):
+    def __init__(self, Name, Geometry,SteelMaterial,BoltMaterial,LoadingStep,Contact,load):
         self.Name = Name
         self.Geometry = Geometry
         self.SteelMaterial = SteelMaterial
         self.BoltMaterial = BoltMaterial
         self.LoadingStep = LoadingStep
         self.Contact = Contact
+        self.Load = load
 
 
 
@@ -147,6 +175,12 @@ class Contact:
 
 
 
+class Load:
+    def __init__(self, Name, load):
+        self.Name = Name
+        self.LoadData = load
+
+
 
 def map_json_to_objects(file_path):
     json_data = read_json_file(file_path)
@@ -174,7 +208,11 @@ def map_json_to_objects(file_path):
         bolt_material = BiLinearMaterial(**model_data['BoltMaterial'])
         loading_step = LoadingStep(**model_data['LoadingStep'])
         contact = Contact(**model_data['Contact'])
-        model = Model(model_data['Name'], geometry, steel_material, bolt_material, loading_step, contact)
+        load_name = model_data['Load']['Name']
+        load_file_name = model_data['Load']['File']
+        load_data = read_csv_to_tuples(load_file_name)
+        load = Load(load_name, load_data)
+        model = Model(model_data['Name'], geometry, steel_material, bolt_material, loading_step, contact,load)
         models.append(model)
     
     return InputParameter(json_data['CaeName'], models)

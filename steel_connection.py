@@ -12,7 +12,6 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
-import regionToolset
 from sys import __stdout__
 
 
@@ -571,15 +570,6 @@ def define_ref_point(abaqus_model,coords,name):
     return ref_point
 
 
-
-def is_face_within_bbox(face, bbox):
-    """Check if all nodes of the face are within the bounding box."""
-    for node in face.getNodes():
-        x, y, z = node.coordinates
-        if not (bbox[0] <= x <= bbox[1] and bbox[2] <= y <= bbox[3] and bbox[4] <= z <= bbox[5]):
-            return False
-    return True
-
 def get_by_bbox(geom, bbox):
     xMin = bbox[0]
     xMax = bbox[1]
@@ -620,7 +610,29 @@ def define_rigid_body_constraint(abaqus_model, part_name,bounding_box, ref_point
     abaqus_model.RigidBody(name=str(constraint_name), pinRegion= set
     , refPointRegion=Region(
         referencePoints=(abaqus_model.rootAssembly.referencePoints[ref_point.id], )))
-    
+
+
+def define_cyclic_load(abaqus_model,load,step_name,ref_point):
+    load_name = load.Name
+    load_data = load.LoadData
+    # create amplitude
+    amp_name = load_name + '-Amp'
+    abaqus_model.TabularAmplitude(data=load_data, name=str(amp_name), smooth=SOLVER_DEFAULT,timeSpan=STEP)
+
+    # create Displacement BCs and assign the previously created amplitude
+    abaqus_model.DisplacementBC(amplitude=str(amp_name), createStepName=
+        str(step_name), distributionType=UNIFORM, fieldName='', fixed=OFF, 
+        localCsys=None, name=str(load_name), region= Region(
+            referencePoints=(abaqus_model.rootAssembly.referencePoints[ref_point.id], )), u1=0.0, u2=1.0, u3=UNSET, 
+            ur1=UNSET, ur2=0.0, ur3=0.0)
+
+
+def define_fixation(abaqus_model,ref_point):
+    abaqus_model.DisplacementBC(amplitude=UNSET, createStepName='Initial', 
+    distributionType=UNIFORM, fieldName='', localCsys=None, name='Fixed-BC', 
+        region=Region(referencePoints=(abaqus_model.rootAssembly.referencePoints[ref_point.id], )), u1=SET, u2=SET, 
+        u3=SET, ur1=SET, ur2=SET, ur3=SET)
+
 
 def run_script(logging,input_params):
     logging.info(" Starting script... ")
@@ -714,6 +726,12 @@ def run_script(logging,input_params):
         fixed_support_bb = get_column_fixed_point_boundingbox(fixed_support_coords,column)
         define_rigid_body_constraint(abaqus_model,column.Name,fixed_support_bb,fixed_support_ref_point,fixed_support_constraint_name,fixed_support_set_name)
 
+        ## Boundary Conditions ---------------------------------------------------------------------
+        logging.info("Defining boundary conditions...")
+        # Define cyclic load
+        define_cyclic_load(abaqus_model,model.Load,loading_step.Name,beam_loading_ref_point)
+        # Define fixation
+        define_fixation(abaqus_model,fixed_support_ref_point)
 
         logging.info("Saving model...")
         mdb.saveAs(pathName=str(input_params.CaeName + ".cae"))

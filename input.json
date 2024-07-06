@@ -85,6 +85,10 @@
       "Contact": {
         "Name": "steel contact property",
         "FrictionCoeff": 0.35
+      },
+      "Load":{
+        "Name":"cyclic load",
+        "File":"cyclic_load.csv"
       }
     }
   ]

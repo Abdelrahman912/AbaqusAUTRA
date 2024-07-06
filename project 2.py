@@ -961,15 +961,21 @@ mdb.models['Model-1'].RigidBody(name='basement', pinRegion=
     )))
 mdb.models['Model-1'].rootAssembly.Set(name='Set-3', referencePoints=(
     mdb.models['Model-1'].rootAssembly.referencePoints[59], ))
+
+
 mdb.models['Model-1'].DisplacementBC(amplitude=UNSET, createStepName='Initial', 
     distributionType=UNIFORM, fieldName='', localCsys=None, name='BC-1', 
     region=mdb.models['Model-1'].rootAssembly.sets['Set-3'], u1=SET, u2=SET, 
     u3=SET, ur1=SET, ur2=SET, ur3=SET)
+
+
 mdb.models['Model-1'].rootAssembly.features.changeKey(fromName='RP-1', toName=
     'base reference point')
+
 mdb.models['Model-1'].rootAssembly.ReferencePoint(point=(91.5, 200.0, 0.0))
 mdb.models['Model-1'].rootAssembly.features.changeKey(fromName='RP-1', toName=
     'loading ref point')
+
 mdb.models['Model-1'].rootAssembly.Set(edges=
     mdb.models['Model-1'].rootAssembly.instances['Csection-beam-1'].edges.getSequenceFromMask(
     mask=('[#4 #7804 #0:2 #100 #0 #ea000 #0:7', ' #84000000 #0 #31fa26a2 ]', ), 
@@ -987,12 +993,15 @@ mdb.models['Model-1'].rootAssembly.Set(edges=
     mask=('[#4000000c #70 #0 #30 #1e000 #0:3 #ffc0 ]', ), )+\
     mdb.models['Model-1'].rootAssembly.instances['Csection-beam-2'].vertices.getSequenceFromMask(
     mask=('[#4000000c #70 #0 #30 #1e000 #0:3 #ffc0 ]', ), ))
+
 mdb.models['Model-1'].RigidBody(name='Constraint-2', pinRegion=
     mdb.models['Model-1'].rootAssembly.sets['p_Set-4'], refPointRegion=Region(
     referencePoints=(mdb.models['Model-1'].rootAssembly.referencePoints[63], 
     )))
 mdb.models['Model-1'].constraints.changeKey(fromName='Constraint-2', toName=
     'loading-surface')
+
+
 mdb.models['Model-1'].TabularAmplitude(data=((0.0, 0.0), (0.00625, 2.8), (
     0.0125, 0.0), (0.01875, -2.8), (0.025, 0.0), (0.03125, 2.8), (0.0375, 0.0), 
     (0.04375, -2.8), (0.05, 0.0), (0.05625, 2.8), (0.0625, 0.0), (0.06875, 
@@ -1030,13 +1039,17 @@ mdb.models['Model-1'].TabularAmplitude(data=((0.0, 0.0), (0.00625, 2.8), (
     0.9625, 0.0), (0.96875, -67.5), (0.975, 0.0), (0.98125, 67.5), (0.9875, 
     0.0), (0.99375, -67.5), (1.0, 0.0)), name='cyclic', smooth=SOLVER_DEFAULT, 
     timeSpan=STEP)
+
+
 mdb.models['Model-1'].rootAssembly.Set(name='Set-6', referencePoints=(
     mdb.models['Model-1'].rootAssembly.referencePoints[63], ))
+
 mdb.models['Model-1'].DisplacementBC(amplitude='cyclic', createStepName=
     'loading step', distributionType=UNIFORM, fieldName='', fixed=OFF, 
     localCsys=None, name='cyclic load', region=
     mdb.models['Model-1'].rootAssembly.sets['Set-6'], u1=0.0, u2=1.0, u3=UNSET, 
     ur1=UNSET, ur2=0.0, ur3=0.0)
+
 mdb.models['Model-1'].parts['plate'].seedPart(deviationFactor=0.1, 
     minSizeFactor=0.1, size=5.5)
 mdb.models['Model-1'].parts['plate'].setElementType(elemTypes=(ElemType(
