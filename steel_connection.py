@@ -548,6 +548,27 @@ def define_contact_interaction(abaqus_model,contact):
         assignments=((GLOBAL, SELF, str(name)), ), stepName='Initial')
 
 
+def get_beam_loading_ref_point_coords(beam,plate):
+    tp = plate.t
+    x = tp/2.0
+    y = -beam.Section.h/2.0
+    z = -beam.Length
+    return (x,y,z)
+
+def get_fixed_support_coords(column,beam,plate,beam_col_clearance):
+    tp = plate.t
+    b_h = beam.Section.h
+    col_length = column.ClearHeight
+    x = tp/2.0
+    y = -b_h - beam_col_clearance - col_length
+    z = -column.Section.h/2.0
+    return (x,y,z)
+
+def define_ref_point(abaqus_model,coords,name):
+    ref_point =  abaqus_model.rootAssembly.ReferencePoint(point=coords)
+    abaqus_model.rootAssembly.features.changeKey(fromName=ref_point.name, toName=str(name))
+    return ref_point
+
 def run_script(logging,input_params):
     logging.info(" Starting script... ")
     models = input_params.Models
@@ -620,6 +641,15 @@ def run_script(logging,input_params):
         logging.info("Defining interactions...")
         contact = model.Contact
         define_contact_interaction(abaqus_model,contact)
+
+        ## Boundary Conditions ---------------------------------------------------------------------
+        logging.info("Defining boundary conditions...")
+        # Define beam loading reference point
+        beam_loading_ref_point_coords = get_beam_loading_ref_point_coords(beam,plate)
+        beam_loading_ref_point = define_ref_point(abaqus_model,beam_loading_ref_point_coords,"beam_loading_ref_point")
+        # Define fixed support reference point
+        fixed_support_coords = get_fixed_support_coords(column,beam,plate,beam_col_clearance)
+        fixed_support_ref_point = define_ref_point(abaqus_model,fixed_support_coords,"fixed_support_ref_point")
 
         logging.info("Saving model...")
         mdb.saveAs(pathName=str(input_params.CaeName + ".cae"))
