@@ -12,6 +12,7 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
+import regionToolset
 from sys import __stdout__
 
 
@@ -569,6 +570,58 @@ def define_ref_point(abaqus_model,coords,name):
     abaqus_model.rootAssembly.features.changeKey(fromName=ref_point.name, toName=str(name))
     return ref_point
 
+
+
+def is_face_within_bbox(face, bbox):
+    """Check if all nodes of the face are within the bounding box."""
+    for node in face.getNodes():
+        x, y, z = node.coordinates
+        if not (bbox[0] <= x <= bbox[1] and bbox[2] <= y <= bbox[3] and bbox[4] <= z <= bbox[5]):
+            return False
+    return True
+
+def get_by_bbox(geom, bbox):
+    xMin = bbox[0]
+    xMax = bbox[1]
+    yMin = bbox[2]
+    yMax = bbox[3]
+    zMin = bbox[4]
+    zMax = bbox[5]
+    return geom.getByBoundingBox(xMin, yMin, zMin, xMax, yMax, zMax)
+
+def create_set_of_faces_by_bbox(abaqus_model,part_name, bbox, set_name):
+    """Create a set of faces within the given bounding box."""
+    inst_1 = part_name + '-1'
+    inst_2 = part_name + '-2'
+    #faces = part.faces.getByBoundingBox(-100,-250,-1100,1000.003,5,-1300)
+    faces =get_by_bbox(abaqus_model.rootAssembly.instances[str(inst_1)].faces, bbox)
+    faces += get_by_bbox(abaqus_model.rootAssembly.instances[str(inst_2)].faces, bbox)
+    return abaqus_model.rootAssembly.Set(faces=faces, name=set_name)
+
+def get_beam_loading_point_boundingbox(ref_point_coords,beam):
+    db = beam.Section.b * 1.5
+    dh = beam.Section.h * 1.5
+    x = ref_point_coords[0]
+    y = ref_point_coords[1]
+    z = ref_point_coords[2]
+    return [x-db, x+db, y-dh, y+dh, z-10, z+10]
+
+def get_column_fixed_point_boundingbox(ref_point_coords,column):
+    db = column.Section.b * 1.5
+    dh = column.Section.h * 1.5
+    x = ref_point_coords[0]
+    y = ref_point_coords[1]
+    z = ref_point_coords[2]
+    return [x-db, x+db, y-10, y+10, z-dh, z+dh]
+
+def define_rigid_body_constraint(abaqus_model, part_name,bounding_box, ref_point,constraint_name, set_name):
+    """Define a rigid body."""
+    set = create_set_of_faces_by_bbox(abaqus_model,part_name, bounding_box, set_name)
+    abaqus_model.RigidBody(name=str(constraint_name), pinRegion= set
+    , refPointRegion=Region(
+        referencePoints=(abaqus_model.rootAssembly.referencePoints[ref_point.id], )))
+    
+
 def run_script(logging,input_params):
     logging.info(" Starting script... ")
     models = input_params.Models
@@ -647,9 +700,20 @@ def run_script(logging,input_params):
         # Define beam loading reference point
         beam_loading_ref_point_coords = get_beam_loading_ref_point_coords(beam,plate)
         beam_loading_ref_point = define_ref_point(abaqus_model,beam_loading_ref_point_coords,"beam_loading_ref_point")
+        # Define beam loading ref point constraint
+        beam_loading_ref_point_constraint_name = "loading_point_constraint"
+        beam_loading_ref_point_set_name = "loading_point_set"
+        beam_bb = get_beam_loading_point_boundingbox(beam_loading_ref_point_coords,beam)
+        define_rigid_body_constraint(abaqus_model,beam.Name,beam_bb,beam_loading_ref_point,beam_loading_ref_point_constraint_name,beam_loading_ref_point_set_name)
         # Define fixed support reference point
         fixed_support_coords = get_fixed_support_coords(column,beam,plate,beam_col_clearance)
         fixed_support_ref_point = define_ref_point(abaqus_model,fixed_support_coords,"fixed_support_ref_point")
+        # Define fixed support ref point constraint
+        fixed_support_constraint_name = "fixed_support_constraint"
+        fixed_support_set_name = "fixed_support_set"
+        fixed_support_bb = get_column_fixed_point_boundingbox(fixed_support_coords,column)
+        define_rigid_body_constraint(abaqus_model,column.Name,fixed_support_bb,fixed_support_ref_point,fixed_support_constraint_name,fixed_support_set_name)
+
 
         logging.info("Saving model...")
         mdb.saveAs(pathName=str(input_params.CaeName + ".cae"))
