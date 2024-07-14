@@ -17,9 +17,10 @@ from sys import __stdout__
 
 
 #constants
-DYNAMIC_IMPLICIT = 'DYNAMIC_IMPLICIT'
-STATIC_GENERAL = 'STATIC_GENERAL'
+STRUCTURED_TECH = 'STRUCTURED'
+SWEEP_TECH = 'SWEEP'
 
+LINEAR_REDUCED_INTEGRATION = 'LINEAR_REDUCED_INTEGRATION'
 LINEAR = 'LINEAR'
 QUADRATIC = 'QUADRATIC'
 
@@ -33,7 +34,12 @@ def create_model(model_name):
     Returns:
     - The newly created Abaqus model.
     """
-    return mdb.Model(name=str(model_name))
+    abaqus_model = mdb.Model(name=str(model_name))
+    
+    if 'Model-1' in mdb.models.keys():
+            del mdb.models['Model-1']
+
+    return abaqus_model
 
 def create_csection_part(abaqus_model,section,length,part_name,conn_config):
     h = section.h
@@ -129,8 +135,8 @@ def create_head_extrusion(abaqus_model,bolt_part,head_r,head_length,origin,face_
         sketchPlane=bolt_part.faces[face_index], sketchPlaneSide= SIDE1, sketchUpEdge=bolt_part.edges[edge_index])
     del abaqus_model.sketches['__profile__']
 
-def create_bolt_part(abaqus_model,bolt,tp,tc):
-    bolt_name = bolt.Name
+def create_bolt_part(abaqus_model,bolt,tp,tc,name_suffix):
+    bolt_name = str(bolt.Name + "-" + name_suffix)
     shank_r = bolt.ShankDia / 2
     shank_length = 2*tc + tp
     head_length = bolt.HeadLength
@@ -237,7 +243,7 @@ def create_plate_part(abaqus_model,plate,beam,column,beam_col_clearance):
     return plate_part
 
 
-def assemble_parts(abaqus_model,beam,column,plate,bolt,beam_part,column_part,bolt_part,plate_part,beam_col_clearance):
+def assemble_parts(abaqus_model,beam,column,plate,bolt,beam_part,column_part,bolt_part_beam,bolt_part_column,plate_part,beam_col_clearance):
     # define coordinate system
     abaqus_model.rootAssembly.DatumCsysByDefault(CARTESIAN)
     
@@ -312,24 +318,26 @@ def assemble_parts(abaqus_model,beam,column,plate,bolt,beam_part,column_part,bol
     b_pt = beam_conn_config.PT
 
     head_length = bolt.HeadLength
-    shank_Length = 2*bt + tp
 
     # bolts in beam
+    shank_Length_beam = 2*bt + tp
     bolt_name = bolt.Name
     bolt_inst_name = str(bolt_name + '-1')
-    bolt_inst = abaqus_model.rootAssembly.Instance(dependent=ON, name= bolt_inst_name, part=bolt_part)
+    bolt_inst = abaqus_model.rootAssembly.Instance(dependent=ON, name= bolt_inst_name, part=bolt_part_beam)
 
     abaqus_model.rootAssembly.rotate(angle=90, axisDirection=(0.0, 
         1.0, 0.0), axisPoint=(0, 0, 0 ), instanceList=(bolt_inst_name, ))
     
     abaqus_model.rootAssembly.translate(instanceList=(bolt_inst_name, ), 
-         vector=(-shank_Length/2.0 + tp/2.0 ,(-b_et), -b_el ))
+         vector=(-shank_Length_beam/2.0 + tp/2.0 ,(-b_et), -b_el ))
     
     abaqus_model.rootAssembly.LinearInstancePattern(direction1=(0.0, 0.0, 
     -1.0), direction2=(0.0, -1.0, 0.0), instanceList=(bolt_inst_name, ), number1=b_nl, 
         number2=b_nt, spacing1=b_pl, spacing2=b_pt)
     
     # bolts in column
+    ct = column.Section.t
+    shank_Length_column = 2*ct + tp
     column_conn_config = column.ConnectionConfig
     c_el = column_conn_config.EL
     c_et = column_conn_config.ET
@@ -339,17 +347,17 @@ def assemble_parts(abaqus_model,beam,column,plate,bolt,beam_part,column_part,bol
     c_pt = column_conn_config.PT
 
     bolt_inst_name = str(bolt_name + '-2')
-    bolt_inst = abaqus_model.rootAssembly.Instance(dependent=ON, name= bolt_inst_name, part=bolt_part)
+    bolt_inst = abaqus_model.rootAssembly.Instance(dependent=ON, name= bolt_inst_name, part=bolt_part_column)
 
     abaqus_model.rootAssembly.rotate(angle=90, axisDirection=(0.0, 
         1.0, 0.0), axisPoint=(0, 0, 0 ), instanceList=(bolt_inst_name, ))
     
     abaqus_model.rootAssembly.translate(instanceList=(bolt_inst_name, ), 
-         vector=(-shank_Length/2.0 + tp/2.0 ,(-bh - beam_col_clearance-c_el), -c_et ))
+         vector=(-shank_Length_column/2.0 + tp/2.0 ,(-bh - beam_col_clearance-c_el), -c_et ))
     
     abaqus_model.rootAssembly.LinearInstancePattern(direction1=(0.0, 0.0, 
     -1.0), direction2=(0.0, -1.0, 0.0), instanceList=(bolt_inst_name, ), number1=c_nt, 
-        number2=c_nl, spacing1=c_pl, spacing2=c_pt)
+        number2=c_nl, spacing1=c_pt, spacing2=c_pl)
     
    
 def partition_bolt(bolt_part):
@@ -512,8 +520,8 @@ def define_bilinear_material(abaqus_model,material):
 def define_solid_section(abaqus_model,material_name,section_name):
     return abaqus_model.HomogeneousSolidSection(material=str(material_name), name=str(section_name), thickness=None)
 
-def assign_section_to_part(part,part_name,section_name):
-    set_name = part_name + '-Set'
+def assign_section_to_part(part,section_name):
+    set_name = part.name + '-Set'
     part.Set(cells=part.cells.getSequenceFromMask(('[#1 ]', ), ), name=str(set_name))
     part.SectionAssignment(region=part.sets[str(set_name)], sectionName=section_name, offset=0.0, offsetType=MIDDLE_SURFACE, offsetField='', 
         thicknessAssignment=FROM_SECTION)
@@ -532,6 +540,34 @@ def define_dynamic_implicit_step(abaqus_model,loading_step):
         maxNumInc=max_num_inc, minInc=min_inc, name=str(name)
         , nlgeom=ON, nohaf=OFF, previous='Initial', timePeriod=time_period)
    
+
+
+
+def define_outputs(abaqus_model,loading_set,fixed_set,loading_step_name):
+    abaqus_model.fieldOutputRequests['F-Output-1'].setValues(
+        timeInterval=0.05, timeMarks=OFF, variables=('S', 'PE', 'PEEQ', 'PEMAG', 
+        'LE', 'U', 'RF', 'CF'))
+    abaqus_model.historyOutputRequests['H-Output-1'].setValues(
+     rebar=EXCLUDE, region=loading_set
+     , sectionPoints=DEFAULT, timeInterval=0.05, variables=('U2', ))
+    abaqus_model.HistoryOutputRequest(createStepName=
+     str(loading_step_name), name='H-Output-2', rebar=EXCLUDE, region=fixed_set
+     , sectionPoints=DEFAULT, timeInterval=0.05, variables=('RF2', ))
+
+
+def define_static_step(abaqus_model,loading_step):
+    initial_inc = loading_step.InitialInc
+    max_inc = loading_step.MaxInc
+    min_inc = loading_step.MinInc
+    max_num_inc = loading_step.MaxNumInc
+    time_period = loading_step.TimePeriod
+    abaqus_step = abaqus_model.StaticStep(name=str(loading_step.Name), previous='Initial')
+    abaqus_step.setValues(initialInc=initial_inc, maxInc=
+        max_inc, minInc=min_inc, timePeriod=time_period,maxNumInc=max_num_inc)
+    abaqus_step.setValues(
+       adaptiveDampingRatio=0.05, continueDampingFactors=False, 
+       stabilizationMagnitude=0.0002, stabilizationMethod=DAMPING_FACTOR)
+    return abaqus_step
 
 def define_contact_interaction(abaqus_model,contact):
     name = contact.Name
@@ -639,10 +675,21 @@ def define_fixation(abaqus_model,ref_point):
         region=Region(referencePoints=(abaqus_model.rootAssembly.referencePoints[ref_point.id], )), u1=SET, u2=SET, 
         u3=SET, ur1=SET, ur2=SET, ur3=SET)
 
+   
+
 def get_eletype_from_geom_order(geom_order):
-    if geom_order == LINEAR:
+    if geom_order == LINEAR_REDUCED_INTEGRATION:
         elemTypes=(ElemType(
             elemCode=C3D8R, elemLibrary=STANDARD, secondOrderAccuracy=OFF, 
+            kinematicSplit=AVERAGE_STRAIN, hourglassControl=DEFAULT, 
+            distortionControl=DEFAULT), ElemType(elemCode=C3D6, elemLibrary=STANDARD, 
+            secondOrderAccuracy=OFF, distortionControl=DEFAULT), ElemType(
+            elemCode=C3D4, elemLibrary=STANDARD, secondOrderAccuracy=OFF, 
+            distortionControl=DEFAULT))
+        return elemTypes
+    elif geom_order == LINEAR:
+        elemTypes=(ElemType(
+            elemCode=C3D8, elemLibrary=STANDARD, secondOrderAccuracy=OFF, 
             kinematicSplit=AVERAGE_STRAIN, hourglassControl=DEFAULT, 
             distortionControl=DEFAULT), ElemType(elemCode=C3D6, elemLibrary=STANDARD, 
             secondOrderAccuracy=OFF, distortionControl=DEFAULT), ElemType(
@@ -652,7 +699,7 @@ def get_eletype_from_geom_order(geom_order):
     elif geom_order == QUADRATIC:
         #TODO: check if this is correct
         elemTypes=(ElemType(
-            elemCode=C3D20R, elemLibrary=STANDARD, secondOrderAccuracy=OFF, 
+            elemCode=C3D20, elemLibrary=STANDARD, secondOrderAccuracy=OFF, 
             kinematicSplit=AVERAGE_STRAIN, hourglassControl=DEFAULT, 
             distortionControl=DEFAULT), ElemType(elemCode=C3D15, elemLibrary=STANDARD, 
             secondOrderAccuracy=OFF, distortionControl=DEFAULT), ElemType(
@@ -680,7 +727,7 @@ def get_all_part_faces_region(part):
     return regions
 
 
-def define_constant_mesh_size(abaqus_part,mesh_params):
+def define_constant_mesh_size(abaqus_model, abaqus_part,mesh_params):
     # Define Element type
     geom_order = mesh_params.ElementType.GeometricOrder
     elemTypes = get_eletype_from_geom_order(geom_order)
@@ -689,7 +736,13 @@ def define_constant_mesh_size(abaqus_part,mesh_params):
     abaqus_part.setElementType(regions=regions, elemTypes=elemTypes)
 
     # Define Mesh Algorithm
-    abaqus_part.setMeshControls(algorithm=ADVANCING_FRONT, elemShape=HEX, regions=all_cells, technique=SWEEP)
+    technique = mesh_params.MeshTechnique
+    if technique == STRUCTURED_TECH:
+        abaqus_part.setMeshControls(regions=all_cells,elemShape=HEX, technique=STRUCTURED)
+    elif technique == SWEEP_TECH:
+        abaqus_part.setMeshControls(algorithm=ADVANCING_FRONT, elemShape=HEX, regions=all_cells, technique=SWEEP)
+    else:
+        raise ValueError("Mesh technique not supported")
         
     # Define Element Size
     part_seed_size = mesh_params.Seed.PartSeedSize
@@ -697,6 +750,7 @@ def define_constant_mesh_size(abaqus_part,mesh_params):
 
     # Generate Mesh
     abaqus_part.generateMesh()
+    abaqus_model.rootAssembly.regenerate()
 
 def get_beam_edge_mesh_boundingbox(beam):
     # get the bounding box that encompass all the edges that are away from the connection
@@ -708,7 +762,7 @@ def get_beam_edge_mesh_boundingbox(beam):
     L = beam.Length
     h = beam.Section.h
     b = beam.Section.b
-    return [xo-b,xo+b, yo - h*1.1, yo + h*1.1, zo - 10, L-Lc*0.8]
+    return [xo-b,xo+b, yo - h*1.1, yo + h*1.1, zo - 10, L-Lc*0.95]
 
 def get_column_edge_mesh_boundingbox(column):
     # get the bounding box that encompass all the edges that are away from the connection
@@ -720,9 +774,9 @@ def get_column_edge_mesh_boundingbox(column):
     L = column.ClearHeight
     h = column.Section.h
     b = column.Section.b
-    return [xo-b,xo+b, yo - h*1.1, yo + h*1.1, zo - 10, L-Lc*0.8]
+    return [xo-b,xo+b, yo - h*1.1, yo + h*1.1, zo - 10, L-Lc*0.95]
 
-def define_adaptive_mesh_size(abaqus_part,adaptive_mesh_params,bounding_box_func):
+def define_adaptive_mesh_size(abaqus_model,abaqus_part,adaptive_mesh_params,bounding_box_func):
     # Define Element type
     geom_order = adaptive_mesh_params.ElementType.GeometricOrder
     elemTypes = get_eletype_from_geom_order(geom_order)
@@ -730,23 +784,66 @@ def define_adaptive_mesh_size(abaqus_part,adaptive_mesh_params,bounding_box_func
     regions = regionToolset.Region(cells=all_cells)
     abaqus_part.setElementType(regions=regions, elemTypes=elemTypes)
 
+
+   
+
     # Define Mesh Algorithm
-    abaqus_part.setMeshControls(algorithm=ADVANCING_FRONT, elemShape=HEX, regions=all_cells, technique=SWEEP)
+    technique = adaptive_mesh_params.MeshTechnique
+    if technique == STRUCTURED_TECH:
+        abaqus_part.setMeshControls(regions=all_cells,elemShape=HEX, technique=STRUCTURED)
+    elif technique == SWEEP_TECH:
+        abaqus_part.setMeshControls(algorithm=ADVANCING_FRONT, elemShape=HEX, regions=all_cells, technique=SWEEP)
+    else:
+        raise ValueError("Mesh technique not supported")
         
     # Define Element Size
     part_seed_size = adaptive_mesh_params.Seed.PartSeedSize
     edge_seed_size = adaptive_mesh_params.Seed.EdgeSeedSize
+
     abaqus_part.seedPart(deviationFactor=0.1, minSizeFactor=0.1, size=part_seed_size)
-    edges = get_by_bbox(abaqus_part.edges, bounding_box_func())
-    abaqus_part.seedEdgeBySize(edges=edges, size=edge_seed_size, constraint=FINER)
+    if edge_seed_size  != 0  :  
+        edges = get_by_bbox(abaqus_part.edges, bounding_box_func())
+        abaqus_part.seedEdgeBySize(edges=edges, size=edge_seed_size, constraint=FINER)
 
     # Generate Mesh
     abaqus_part.generateMesh()
+    abaqus_model.rootAssembly.regenerate()
 
-def run_script(logging,input_params):
+
+def define_set_from_rp(abaqus_model,ref_point):
+    return abaqus_model.rootAssembly.Set(referencePoints=(abaqus_model.rootAssembly.referencePoints[ref_point.id], ), name=str(ref_point.name + '-Output Set'))
+
+
+# # Create Job
+#     mdb.Job(atTime=None, contactPrint=OFF, description='', echoPrint=OFF, 
+#         explicitPrecision=SINGLE, getMemoryFromAnalysis=True, historyPrint=OFF, 
+#         memory=90, memoryUnits=PERCENTAGE, model='Model-1', modelPrint=OFF, 
+#         multiprocessingMode=DEFAULT, name='Job-1', nodalOutputPrecision=SINGLE, 
+#         numCpus=1, numGPUs=0, queue=None, resultsFormat=
+#         ODB, scratch='', type=ANALYSIS, userSubroutine='', waitHours=0, 
+#         waitMinutes=0)
+
+#     # Submit job
+#     mdb.jobs['Job-1'].submit(consistencyChecking=OFF)
+#     mdb.jobs['Job-1'].waitForCompletion()
+
+def create_job(abaqus_model,job_name):
+    return mdb.Job(atTime=None, contactPrint=OFF, description='', echoPrint=OFF, 
+        explicitPrecision=SINGLE, getMemoryFromAnalysis=True, historyPrint=OFF, 
+        memory=90, memoryUnits=PERCENTAGE, model=abaqus_model.name, modelPrint=OFF, 
+        multiprocessingMode=DEFAULT, name=str(job_name), nodalOutputPrecision=SINGLE, 
+        parallelizationMethodExplicit=DOMAIN, numDomains=3,
+        numCpus=3, numGPUs=1, queue=None, resultsFormat=
+        ODB, scratch='', type=ANALYSIS, userSubroutine='', waitHours=0, 
+        waitMinutes=0)
+
+
+
+def run_script(logging,input_params,on_job_creation_func,on_job_completion_func):
     logging.info(" Starting script... ")
     models = input_params.Models
     for mi, model in enumerate(models):
+
         model_name = model.Name
         logging.info(" Starting model [" + model_name + "]...")
         abaqus_model = create_model(model_name)
@@ -767,8 +864,9 @@ def run_script(logging,input_params):
         beam_part = create_csection_part(abaqus_model,beam.Section,beam.Length,"beam",beam_conn_config)
         # Create column part
         col_part = create_csection_part(abaqus_model,column.Section,column.ClearHeight,"column",column_conn_config)
-        # Create bolt part
-        bolt_part = create_bolt_part(abaqus_model,bolt,plate.t,beam.Section.t)
+        # Create bolt part for beam and column
+        bolt_part_beam = create_bolt_part(abaqus_model,bolt,plate.t,beam.Section.t,"beam")
+        bolt_part_column = create_bolt_part(abaqus_model,bolt,plate.t,column.Section.t,"column")
         # Create plate part
         plate_part = create_plate_part(abaqus_model,plate,beam,column,model.Geometry.BeamColumnClearance)
 
@@ -785,31 +883,28 @@ def run_script(logging,input_params):
         bolt_section_name = "bolt_section"
         abaqus_steel_section = define_solid_section(abaqus_model,steel_material.Name,steel_section_name)
         abaqus_bolt_section = define_solid_section(abaqus_model,bolt_material.Name,bolt_section_name)
-        assign_section_to_part(beam_part,beam.Name,steel_section_name)
-        assign_section_to_part(col_part,column.Name,steel_section_name)
-        assign_section_to_part(bolt_part,bolt.Name,bolt_section_name)
-        assign_section_to_part(plate_part,plate.Name,steel_section_name)
+        assign_section_to_part(beam_part,steel_section_name)
+        assign_section_to_part(col_part,steel_section_name)
+        assign_section_to_part(bolt_part_beam,bolt_section_name)
+        assign_section_to_part(bolt_part_column,bolt_section_name)
+        assign_section_to_part(plate_part,steel_section_name)
 
         ## Partitioning ---------------------------------------------------------------------
         logging.info("Partitioning parts...")
-        partition_bolt(bolt_part)
+        partition_bolt(bolt_part_beam)
+        partition_bolt(bolt_part_column)
         partition_c_part(col_part,column,column.ClearHeight)
         partition_c_part(beam_part,beam,beam.Length)
         partition_plate(plate_part,beam,column,beam_col_clearance)
 
         ## Assembly ---------------------------------------------------------------------
         logging.info("Assembling parts...")
-        assemble_parts(abaqus_model,beam,column,plate,bolt,beam_part,col_part,bolt_part,plate_part,beam_col_clearance)
+        assemble_parts(abaqus_model,beam,column,plate,bolt,beam_part,col_part,bolt_part_beam,bolt_part_column,plate_part,beam_col_clearance)
 
         ## Step ---------------------------------------------------------------------
         logging.info("Defining steps...")
         loading_step = model.LoadingStep
-        step_type = loading_step.StepType
-        if step_type == DYNAMIC_IMPLICIT:
-            abaqus_step = define_dynamic_implicit_step(abaqus_model,loading_step)
-        else:
-            logging.error("Saving model...")
-            raise ValueError("Step type not supported")
+        abaqus_step =  define_static_step(abaqus_model,loading_step)
         
         ## Interaction ---------------------------------------------------------------------
         logging.info("Defining interactions...")
@@ -821,6 +916,7 @@ def run_script(logging,input_params):
         # Define beam loading reference point
         beam_loading_ref_point_coords = get_beam_loading_ref_point_coords(beam,plate)
         beam_loading_ref_point = define_ref_point(abaqus_model,beam_loading_ref_point_coords,"beam_loading_ref_point")
+        load_out_set = define_set_from_rp(abaqus_model,beam_loading_ref_point)
         # Define beam loading ref point constraint
         beam_loading_ref_point_constraint_name = "loading_point_constraint"
         beam_loading_ref_point_set_name = "loading_point_set"
@@ -829,6 +925,7 @@ def run_script(logging,input_params):
         # Define fixed support reference point
         fixed_support_coords = get_fixed_support_coords(column,beam,plate,beam_col_clearance)
         fixed_support_ref_point = define_ref_point(abaqus_model,fixed_support_coords,"fixed_support_ref_point")
+        fixed_out_set = define_set_from_rp(abaqus_model,fixed_support_ref_point)
         # Define fixed support ref point constraint
         fixed_support_constraint_name = "fixed_support_constraint"
         fixed_support_set_name = "fixed_support_set"
@@ -840,21 +937,50 @@ def run_script(logging,input_params):
         # Define fixation
         define_fixation(abaqus_model,fixed_support_ref_point)
 
-        ## Meshing ---------------------------------------------------------------------
-        logging.info("Meshing parts...")
-        # Mesh Bolt
-        bolt_mesh = model.BoltMesh
-        define_constant_mesh_size(bolt_part,bolt_mesh)
-        # Mesh Plate
-        plate_mesh = model.PlateMesh
-        define_constant_mesh_size(plate_part,plate_mesh)
-        # Mesh Beam
-        beam_mesh = model.SteelMesh
-        define_adaptive_mesh_size(beam_part,beam_mesh,lambda : get_beam_edge_mesh_boundingbox(beam))
-        # Mesh Column
-        column_mesh = model.SteelMesh
-        define_adaptive_mesh_size(col_part,column_mesh,lambda : get_column_edge_mesh_boundingbox(column))
+        ## Outputs ---------------------------------------------------------------------
+        logging.info("Defining outputs")
+        define_outputs(abaqus_model,load_out_set,fixed_out_set,loading_step.Name)
+        jobs = model.Jobs
 
+        logging.info("Saving model...")
+        mdb.saveAs(pathName=str(input_params.CaeName + ".cae"))
+
+        for job in jobs:
+        ## Meshing ---------------------------------------------------------------------
+            logging.info("Meshing parts " + str(job.Name) + "..."  )
+            model_mesh = job.AssociatedMesh
+            bolt_mesh = model_mesh.BoltMesh
+            plate_mesh = model_mesh.PlateMesh
+            beam_mesh = model_mesh.SteelMesh
+            column_mesh = model_mesh.SteelMesh
+            # Mesh Bolt Beam
+            define_constant_mesh_size(abaqus_model,bolt_part_beam,bolt_mesh)
+            # Mesh Bolt Column
+            define_constant_mesh_size(abaqus_model,bolt_part_column,bolt_mesh)
+            # Mesh Plate
+            define_constant_mesh_size(abaqus_model,plate_part,plate_mesh)
+            # Mesh Beam
+            define_adaptive_mesh_size(abaqus_model,beam_part,beam_mesh,lambda : get_beam_edge_mesh_boundingbox(beam))
+            # Mesh Column
+            define_adaptive_mesh_size(abaqus_model,col_part,column_mesh,lambda : get_column_edge_mesh_boundingbox(column))
+
+            ## Job ---------------------------------------------------------------------
+            logging.info("Creating job " + str(job.Name) + "..."  )
+            job_name = job.Name
+            job = create_job(abaqus_model,job_name)
+            try:
+                on_job_creation_func(job)
+            except Exception as e:
+                logging.error("Error while running on_job_creation_func: " + str(e))
+                logging.info("Saving model...")
+                mdb.saveAs(pathName=str(input_params.CaeName + ".cae") )
+        
+        try:
+            on_job_completion_func(model_name,jobs)
+        except Exception as e:
+            logging.error("Error while running on_job_completion_func: " + str(e))
+            logging.info("Saving model...")
+            mdb.saveAs(pathName=str(input_params.CaeName + ".cae") )
 
         logging.info("Saving model...")
         mdb.saveAs(pathName=str(input_params.CaeName + ".cae"))

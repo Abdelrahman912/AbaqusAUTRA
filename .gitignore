@@ -171,3 +171,7 @@ cython_debug/
 *.rec
 /output/
 /Demos/
+
+# Ignore folders with "Steel" in their name
+**/*Steel*/
+

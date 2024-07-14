@@ -1,0 +1,396 @@
+{
+  "CaeName": "SteelConnection-Sensitivity",
+  "DirectoryName": "SteelConnection-Sensitivity- v4",
+  "Models": [
+    {
+     "Name": "Model - StConn - Sensitivity",
+      "Geometry": {
+        "Beam": {
+          "Length": 1200,
+          "Name": "Beam",
+          "Section": {
+            "h": 150,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoL": 3,
+            "NoT": 2,
+            "PL": 120,
+            "PT": 50,
+            "EL": 50,
+            "ET": 50,
+            "HoleDia": 14
+          }
+        },
+        "BeamColumnClearance": 10,
+        "Column": {
+          "ClearHeight": 890,
+          "Name": "Column",
+          "Section": {
+            "h": 150,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoL": 3,
+            "NoT": 2,
+            "PL": 50,
+            "PT": 50,
+            "EL": 50,
+            "ET": 50,
+            "HoleDia": 14
+          }
+        },
+        "Bolt": {
+          "Name": "Bolt - D14",
+          "ShankDia": 14,
+          "HeadLength": 4,
+          "HeadDia": 20
+        },
+        "Plate": {
+          "Name": "Gusset Plate",
+          "t": 4
+        }
+      },
+      "SteelMaterial": {
+        "Fy": 350,
+        "Fu": 520,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.11083,
+        "Name": "Steel",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
+      },
+      "BoltMaterial": {
+        "Fy": 240,
+        "Fu": 400,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.1,
+        "Name": "Steel",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
+      },
+      "LoadingStep": {
+        "Name": "Loading step",
+        "TimePeriod": 1,
+        "InitialInc": 0.001,
+        "MinInc": 1E-25,
+        "MaxInc": 1,
+        "MaxNumInc": 1000000000
+      },
+      "Contact": {
+        "Name": "steel contact property",
+        "FrictionCoeff": 0.35
+      },
+      "Load": {
+        "Name": "Monotonic load ",
+        "File": "Monotonic_load.csv"
+      },
+      "Jobs": [
+        {
+          "Name": "C3D8R-S20-B4",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 4
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 20
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 20,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        },
+        {
+          "Name": "C3D8R-S15-B3",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 3
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 15
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 15,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        },
+        {
+          "Name": "C3D8R-S10-B2",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 2
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 10
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 10,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        },
+        {
+          "Name": "C3D8-S20-B4",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR"
+              },
+              "Seed": {
+                "PartSeedSize": 4
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR"
+              },
+              "Seed": {
+                "PartSeedSize": 20
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "LINEAR"
+              },
+              "Seed": {
+                "PartSeedSize": 20,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        },
+        {
+          "Name": "C3D8-S15-B3",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR"
+              },
+              "Seed": {
+                "PartSeedSize": 3
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR"
+              },
+              "Seed": {
+                "PartSeedSize": 15
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "LINEAR"
+              },
+              "Seed": {
+                "PartSeedSize": 15,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        },
+        {
+          "Name": "C3D8-S10-B2",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR"
+              },
+              "Seed": {
+                "PartSeedSize": 2
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR"
+              },
+              "Seed": {
+                "PartSeedSize": 10
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "LINEAR"
+              },
+              "Seed": {
+                "PartSeedSize": 10,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        },
+        {
+          "Name": "C3D20R-S20-B4",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "QUADRATIC"
+              },
+              "Seed": {
+                "PartSeedSize": 4
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "QUADRATIC"
+              },
+              "Seed": {
+                "PartSeedSize": 20
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "QUADRATIC"
+              },
+              "Seed": {
+                "PartSeedSize": 20,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        },
+        {
+          "Name": "C3D20R-S15-B3",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "QUADRATIC"
+              },
+              "Seed": {
+                "PartSeedSize": 3
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "QUADRATIC"
+              },
+              "Seed": {
+                "PartSeedSize": 15
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "QUADRATIC"
+              },
+              "Seed": {
+                "PartSeedSize": 15,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        },
+        {
+          "Name": "C3D20R-S10-B2",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "QUADRATIC"
+              },
+              "Seed": {
+                "PartSeedSize": 2
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "QUADRATIC"
+              },
+              "Seed": {
+                "PartSeedSize": 10
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "QUADRATIC"
+              },
+              "Seed": {
+                "PartSeedSize": 10,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        }
+      
+      ]
+    }
+  ]
+}

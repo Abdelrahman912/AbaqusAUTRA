@@ -4,6 +4,9 @@ import os
 from sys import __stdout__, __stderr__ 
 import csv
 
+
+
+
 def read_csv_to_tuples(file_path):
     # Initialize an empty list to store the tuples
     data_tuples = []
@@ -131,7 +134,7 @@ class Geometry:
         self.Plate = Plate
 
 class Model:
-    def __init__(self, Name, Geometry,SteelMaterial,BoltMaterial,LoadingStep,Contact,load, BoltMesh, PlateMesh, SteelMesh):
+    def __init__(self, Name, Geometry,SteelMaterial,BoltMaterial,LoadingStep,Contact,load, jobs):
         self.Name = Name
         self.Geometry = Geometry
         self.SteelMaterial = SteelMaterial
@@ -139,14 +142,13 @@ class Model:
         self.LoadingStep = LoadingStep
         self.Contact = Contact
         self.Load = load
-        self.BoltMesh = BoltMesh
-        self.PlateMesh = PlateMesh
-        self.SteelMesh = SteelMesh
+        self.Jobs = jobs
 
 
 
 class InputParameter:
-    def __init__(self, CaeName, Models):
+    def __init__(self, CaeName,DirectoryName, Models):
+        self.DirectoryName = DirectoryName
         self.CaeName = CaeName
         self.Models = Models
 
@@ -163,12 +165,12 @@ class BiLinearMaterial:
 
 
 class LoadingStep:
-    def __init__(self, Name, StepType, TimePeriod, InitialInc, MinInc, MaxNumInc):
+    def __init__(self, Name, TimePeriod, InitialInc, MinInc,MaxInc, MaxNumInc):
         self.Name = Name
-        self.StepType = StepType
         self.TimePeriod = TimePeriod
         self.InitialInc = InitialInc
         self.MinInc = MinInc
+        self.MaxInc =  MaxInc
         self.MaxNumInc = MaxNumInc
 
 class Contact:
@@ -198,10 +200,21 @@ class ElementType:
         self.GeometricOrder = GeometricOrder
 
 class Mesh:
-    def __init__(self, ElementType, Seed):
+    def __init__(self,MeshTechnique, ElementType, Seed):
+        self.MeshTechnique = MeshTechnique
         self.ElementType = ElementType
         self.Seed = Seed
 
+class ModelMesh:
+    def __init__(self, BoltMesh, PlateMesh, SteelMesh):
+        self.BoltMesh = BoltMesh
+        self.PlateMesh = PlateMesh
+        self.SteelMesh = SteelMesh
+
+class Job:
+    def __init__(self, Name, AssociatedMesh):
+        self.Name = Name
+        self.AssociatedMesh = AssociatedMesh
 
 def map_json_to_objects(file_path):
     json_data = read_json_file(file_path)
@@ -233,13 +246,21 @@ def map_json_to_objects(file_path):
         load_file_name = model_data['Load']['File']
         load_data = read_csv_to_tuples(load_file_name)
         load = Load(load_name, load_data)
-        bolt_mesh = Mesh(ElementType(**model_data['BoltMesh']['ElementType']),Seed(**model_data['BoltMesh']['Seed']))
-        plate_mesh = Mesh(ElementType(**model_data['PlateMesh']['ElementType']),Seed(**model_data['PlateMesh']['Seed']))
-        steel_mesh = Mesh(ElementType(**model_data['SteelMesh']['ElementType']),AdaptiveSeed(**model_data['SteelMesh']['Seed']))
-        model = Model(model_data['Name'], geometry, steel_material, bolt_material, loading_step, contact,load, bolt_mesh, plate_mesh, steel_mesh)
+        jobs = []
+        for job_data in model_data['Jobs']:
+            bolt_mesh = Mesh(job_data['AssociatedMesh']['BoltMesh']['MeshTechnique'], ElementType(**job_data['AssociatedMesh']['BoltMesh']['ElementType']),Seed(**job_data['AssociatedMesh']['BoltMesh']['Seed']))
+            plate_mesh = Mesh(job_data['AssociatedMesh']['PlateMesh']['MeshTechnique'],ElementType(**job_data['AssociatedMesh']['PlateMesh']['ElementType']),Seed(**job_data['AssociatedMesh']['PlateMesh']['Seed']))
+            part_seed = job_data['AssociatedMesh']['SteelMesh']['Seed']['PartSeedSize']
+            edge_seed = job_data.get('AssociatedMesh', {}).get('SteelMesh', {}).get('Seed', {}).get('EdgeSeedSize', 0)
+            steel_seed = AdaptiveSeed(edge_seed, part_seed)
+            steel_mesh = Mesh(job_data['AssociatedMesh']['SteelMesh']['MeshTechnique'],ElementType(**job_data['AssociatedMesh']['SteelMesh']['ElementType']),steel_seed)
+            model_mesh = ModelMesh(bolt_mesh, plate_mesh, steel_mesh)
+            job = Job(job_data['Name'], model_mesh)
+            jobs.append(job)
+        model = Model(model_data['Name'], geometry, steel_material, bolt_material, loading_step, contact,load, jobs)
         models.append(model)
     
-    return InputParameter(json_data['CaeName'], models)
+    return InputParameter(json_data['CaeName'],json_data['DirectoryName'], models)
 
 
 

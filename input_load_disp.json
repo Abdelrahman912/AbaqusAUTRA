@@ -1,0 +1,506 @@
+{
+  "CaeName": "SteelConnections",
+  "DirectoryName": "SteelConnections - Script - Documentation - v3",
+  "Models": [
+    {
+      "Name": "Model - StConn - 1",
+      "Geometry": {
+        "Beam": {
+          "Length": 1200,
+          "Name": "Beam",
+          "Section": {
+            "h": 200,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoL": 3,
+            "NoT": 3,
+            "PL": 120,
+            "PT": 50,
+            "EL": 50,
+            "ET": 50,
+            "HoleDia": 14
+          }
+        },
+        "BeamColumnClearance": 10,
+        "Column": {
+          "ClearHeight": 890,
+          "Name": "Column",
+          "Section": {
+            "h": 200,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoL": 2,
+            "NoT": 3,
+            "PL": 100,
+            "PT": 50,
+            "EL": 50,
+            "ET": 50,
+            "HoleDia": 14
+          }
+        },
+        "Bolt": {
+          "Name": "Bolt - D14",
+          "ShankDia": 14,
+          "HeadLength": 4,
+          "HeadDia": 20
+        },
+        "Plate": {
+          "Name": "Gusset Plate",
+          "t": 5
+        }
+      },
+      "SteelMaterial": {
+        "Fy": 350,
+        "Fu": 520,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.11083,
+        "Name": "Steel",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
+      },
+      "BoltMaterial": {
+        "Fy": 240,
+        "Fu": 400,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.1,
+        "Name": "Steel",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
+      },
+      "LoadingStep": {
+        "Name": "Loading step",
+        "TimePeriod": 1,
+        "InitialInc": 0.001,
+        "MinInc": 1E-25,
+        "MaxInc": 1,
+        "MaxNumInc": 1000000000
+      },
+      "Contact": {
+        "Name": "steel contact property",
+        "FrictionCoeff": 0.35
+      },
+      "Load": {
+        "Name": "Monotonic load ",
+        "File": "Monotonic_load.csv"
+      },
+      "Jobs": [
+        {
+          "Name": "param1",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique": "SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 4.5
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 15
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 15,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Model - StConn - 2",
+      "Geometry": {
+        "Beam": {
+          "Length": 1200,
+          "Name": "Beam",
+          "Section": {
+            "h": 200,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoL": 3,
+            "NoT": 3,
+            "PL": 120,
+            "PT": 50,
+            "EL": 50,
+            "ET": 50,
+            "HoleDia": 14
+          }
+        },
+        "BeamColumnClearance": 10,
+        "Column": {
+          "ClearHeight": 890,
+          "Name": "Column",
+          "Section": {
+            "h": 200,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoL": 3,
+            "NoT": 2,
+            "PL": 50,
+            "PT": 100,
+            "EL": 50,
+            "ET": 50,
+            "HoleDia": 14
+          }
+        },
+        "Bolt": {
+          "Name": "Bolt - D14",
+          "ShankDia": 14,
+          "HeadLength": 4,
+          "HeadDia": 20
+        },
+        "Plate": {
+          "Name": "Gusset Plate",
+          "t": 4
+        }
+      },
+      "SteelMaterial": {
+        "Fy": 350,
+        "Fu": 520,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.11083,
+        "Name": "Steel",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
+      },
+      "BoltMaterial": {
+        "Fy": 240,
+        "Fu": 400,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.1,
+        "Name": "Steel",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
+      },
+      "LoadingStep": {
+        "Name": "Loading step",
+        "TimePeriod": 1,
+        "InitialInc": 0.001,
+        "MinInc": 1E-25,
+        "MaxInc": 1,
+        "MaxNumInc": 1000000000
+      },
+      "Contact": {
+        "Name": "steel contact property",
+        "FrictionCoeff": 0.35
+      },
+      "Load": {
+        "Name": "Monotonic load ",
+        "File": "Monotonic_load.csv"
+      },
+      "Jobs": [
+        {
+          "Name": "param2",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique": "SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 4.5
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 15
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 15,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Model - StConn - 3",
+      "Geometry": {
+        "Beam": {
+          "Length": 1200,
+          "Name": "Beam",
+          "Section": {
+            "h": 150,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoL": 3,
+            "NoT": 2,
+            "PL": 120,
+            "PT": 50,
+            "EL": 50,
+            "ET": 50,
+            "HoleDia": 14
+          }
+        },
+        "BeamColumnClearance": 10,
+        "Column": {
+          "ClearHeight": 890,
+          "Name": "Column",
+          "Section": {
+            "h": 150,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoL": 2,
+            "NoT": 2,
+            "PL": 100,
+            "PT": 50,
+            "EL": 50,
+            "ET": 50,
+            "HoleDia": 14
+          }
+        },
+        "Bolt": {
+          "Name": "Bolt - D14",
+          "ShankDia": 14,
+          "HeadLength": 4,
+          "HeadDia": 20
+        },
+        "Plate": {
+          "Name": "Gusset Plate",
+          "t": 5
+        }
+      },
+      "SteelMaterial": {
+        "Fy": 350,
+        "Fu": 520,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.11083,
+        "Name": "Steel",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
+      },
+      "BoltMaterial": {
+        "Fy": 240,
+        "Fu": 400,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.1,
+        "Name": "Steel",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
+      },
+      "LoadingStep": {
+        "Name": "Loading step",
+        "TimePeriod": 1,
+        "InitialInc": 0.001,
+        "MinInc": 1E-25,
+        "MaxInc": 1,
+        "MaxNumInc": 1000000000
+      },
+      "Contact": {
+        "Name": "steel contact property",
+        "FrictionCoeff": 0.35
+      },
+      "Load": {
+        "Name": "Monotonic load ",
+        "File": "Monotonic_load.csv"
+      },
+      "Jobs": [
+        {
+          "Name": "param3",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique": "SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 4.5
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 15
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 15,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Model - StConn - 4",
+      "Geometry": {
+        "Beam": {
+          "Length": 1200,
+          "Name": "Beam",
+          "Section": {
+            "h": 150,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoL": 3,
+            "NoT": 2,
+            "PL": 120,
+            "PT": 50,
+            "EL": 50,
+            "ET": 50,
+            "HoleDia": 14
+          }
+        },
+        "BeamColumnClearance": 10,
+        "Column": {
+          "ClearHeight": 890,
+          "Name": "Column",
+          "Section": {
+            "h": 150,
+            "b": 60,
+            "t": 5,
+            "c": 20
+          },
+          "ConnectionConfig": {
+            "NoL": 3,
+            "NoT": 2,
+            "PL": 50,
+            "PT": 50,
+            "EL": 50,
+            "ET": 50,
+            "HoleDia": 14
+          }
+        },
+        "Bolt": {
+          "Name": "Bolt - D14",
+          "ShankDia": 14,
+          "HeadLength": 4,
+          "HeadDia": 20
+        },
+        "Plate": {
+          "Name": "Gusset Plate",
+          "t": 4
+        }
+      },
+      "SteelMaterial": {
+        "Fy": 350,
+        "Fu": 520,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.11083,
+        "Name": "Steel",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
+      },
+      "BoltMaterial": {
+        "Fy": 240,
+        "Fu": 400,
+        "EpsPlasticY": 0,
+        "EpsPlasticU": 0.1,
+        "Name": "Steel",
+        "Description": null,
+        "E": 210000,
+        "v": 0.33
+      },
+      "LoadingStep": {
+        "Name": "Loading step",
+        "TimePeriod": 1,
+        "InitialInc": 0.001,
+        "MinInc": 1E-25,
+        "MaxInc": 1,
+        "MaxNumInc": 1000000000
+      },
+      "Contact": {
+        "Name": "steel contact property",
+        "FrictionCoeff": 0.35
+      },
+      "Load": {
+        "Name": "Monotonic load ",
+        "File": "Monotonic_load.csv"
+      },
+      "Jobs": [
+        {
+          "Name": "param4",
+          "AssociatedMesh": {
+            "BoltMesh": {
+              "MeshTechnique": "SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 4.5
+              }
+            },
+            "PlateMesh": {
+              "MeshTechnique":"SWEEP",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 15
+              }
+            },
+            "SteelMesh": {
+              "MeshTechnique":"STRUCTURED",
+              "ElementType": {
+                "GeometricOrder": "LINEAR_REDUCED_INTEGRATION"
+              },
+              "Seed": {
+                "PartSeedSize": 15,
+                "EdgeSeedSize": 50
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
